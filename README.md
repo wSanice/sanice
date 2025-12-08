@@ -2,8 +2,8 @@
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/wSanice/sanice/refs/heads/main/assets/sanice.png" alt="Sanice Banner" width="100%"/>
-  
 </p>
+
 > (Sistema Automatizado de Normalização, Inteligência Computacional e Estatística)<br>
 > (System for Automated Normalization, Intelligence, Computation, and Statistics)
 
@@ -18,6 +18,24 @@
 </div>
 
 ---
+<details>
+<summary><b>Release v1.0.5: Architecture Refactoring & Encapsulation</b></summary>
+<br>
+
+This version focuses on improving Code Quality and the library's internal architecture, in addition to important documentation fixes.
+
+### Architectural Changes (Encapsulation)
+We refactored the library core (`core.py`) to follow Object-Oriented Programming best practices:
+* **Constant Encapsulation:** The `I18N` (translations) and `METHOD_ALIASES` (method aliases) dictionaries were moved from the global scope to inside the `Sanice` class.
+* **Clean Namespace:** Avoids global scope "pollution" when importing the library, preventing conflicts with other libs.
+* **Instance Access:** All internal methods now access configurations via `self.I18N` and `self.METHOD_ALIASES`, facilitating future inheritance and class extension.
+
+### Documentation
+* **Extras Installation:** The `README.md` has been updated to include the correct installation instruction for those who wish to use the API:
+  ```bash
+  pip install "sanice[api]"
+  ```
+</details>
 
 <a name="-english"></a>
 ## 🇺🇸 English
@@ -26,11 +44,24 @@
 
 ### Installation
 
+**Standard Installation (Data Science Core):**
 ```bash
 pip install sanice
 ```
+### Full Installation (includes API support):
+**Required if you plan to use** `.serve_api()`
+```bash
+pip install "sanice[api]"
+```
+### CLI Helper
+You can verify installed commands directly from your terminal without opening Python:
 
-### Quick Start
+```bash
+sanice help    # 🇺🇸 English
+sanice bangzhu # 🇨🇳 Chinese
+sanice madad   # 🇮🇳 Hindi
+```
+### ⚡ Quick Start
 
 **How to turn a dirty CSV into a deployed AI model in minutes.**
 
@@ -194,6 +225,25 @@ This project is licensed under the Apache License, Version 2.0. See the [LICENSE
 
 ---
 
+<details>
+<summary><b>Atualização v1.0.5: Refatoração de Arquitetura & Encapsulamento</b></summary>
+<br>
+
+Esta versão foca na melhoria da qualidade do código (Code Quality) e na arquitetura interna da biblioteca, além de correções importantes na documentação.
+
+### Mudanças Arquiteturais (Encapsulamento)
+Refatoramos o núcleo da biblioteca (`core.py`) para seguir melhores práticas de Programação Orientada a Objetos:
+* **Encapsulamento de Constantes:** Os dicionários `I18N` (traduções) e `METHOD_ALIASES` (apelidos de métodos) foram movidos do escopo global para dentro da classe `Sanice`.
+* **Namespace Limpo:** Evita "poluição" do escopo global ao importar a biblioteca, prevenindo conflitos com outras libs.
+* **Acesso via Instância:** Todos os métodos internos agora acessam configurações via `self.I18N` e `self.METHOD_ALIASES`, facilitando futura herança e extensão da classe.
+
+### Documentação
+* **Instalação de Extras:** O `README.md` foi atualizado para incluir a instrução correta de instalação para quem deseja usar a API:
+  ```bash
+  pip install "sanice[api]"
+  ```
+</details>
+
 <a name="-português"></a>
 ## 🇧🇷 Português
 
@@ -201,11 +251,26 @@ This project is licensed under the Apache License, Version 2.0. See the [LICENSE
 
 ### Instalação
 
+**Instalação Padrão (Núcleo Data Science):**
 ```bash
 pip install sanice
 ```
+### Instalação Completa (inclui suporte a API): 
+**Necessário se você planeja usar** `.servir_api()`
+```bash
+pip install "sanice[api]"
+```
 
-### Início Rápido
+
+### Ajuda no Terminal (CLI)
+
+Você pode verificar os comandos disponíveis direto do seu terminal, sem abrir o Python:
+
+```bash
+sanice ajuda   # 🇧🇷 Português
+```
+
+### ⚡ Início Rápido
 
 **Como transformar um CSV sujo em um modelo de IA em produção em minutos.**
 
@@ -408,6 +473,10 @@ Este projeto está licenciado sob a Apache License, Version 2.0. Consulte a [LIC
 <div align="right">
     <a href="#sanice">⬆️ Back to Top</a>
 </div>
+<br><br>
+<p align="center">
+  <i>"Blind faith is the tool of monsters and fools. Analyze the data."</i>
+</p>
 
 ---
 Desenvolvido por **wSanice**.

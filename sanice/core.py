@@ -20,195 +20,6 @@ import joblib
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sqlalchemy import create_engine
 
-I18N = {
-    "pt": {
-        "load_ok": "[CARREGAR] Dados carregados: {rows} linhas x {cols} colunas.",
-        "load_err": "[ERRO] Falha ao carregar: {e}",
-        "view": "\n[VISUALIZAR] {header}:",
-        "clean_cols": "[LIMPEZA] Nomes das colunas padronizados.",
-        "clean_txt": "[LIMPEZA] Texto da coluna '{col}' normalizado.",
-        "drop_null": "[REMOVER] {qtd} linhas com nulos removidas.",
-        "fill_null": "[PREENCHER] Nulos preenchidos com '{val}'.",
-        "date_conv": "[DATA] Coluna '{col}' convertida para data.",
-        "col_add": "[CRIAR] Coluna '{col}' criada.",
-        "filter": "[FILTRO] '{query}': {before} -> {after} linhas.",
-        "sort": "[ORDENAR] Ordenado por {cols}.",
-        "join": "[UNIR] Tabelas unidas ({how}). Linhas: {before} -> {after}",
-        "plot_err": "[ERRO] Falha ao plotar: {e}",
-        "stats": "\n[ESTATÍSTICAS] Resumo Estatístico:",
-        "types": "\n[TIPOS] Tipos de Dados:",
-        "save": "[SALVAR] Arquivo salvo em: {path}",
-        "ml_start": "\n[AUTO-ML] Iniciando treinamento para prever: '{target}'...",
-        "ml_ignore_date": "   [INFO] Ignorando colunas de data crua: {cols}",
-        "ml_feats": "   - Features processadas: {n} colunas (após encoding).",
-        "ml_success_clf": "   Modelo Classificador treinado!",
-        "ml_success_reg": "   Modelo Regressor treinado!",
-        "ml_acc": "   Acurácia: {score:.2%}",
-        "ml_r2": "   R² Score: {score:.4f}",
-        "ml_saved": "   Modelo blindado salvo em: {path}",
-        "ia_loaded": "[IA] Modelo carregado! Espera {n} colunas.",
-        "pred_done": "[PREVISÃO] Previsões geradas na coluna '{col}'.",
-        "err_load_ia": "Você precisa usar .carregar_ia() antes de prever!",
-        "sql_ok": "[SQL] Tabela '{tb}' exportada com sucesso para o banco.",
-        "sql_err": "[SQL] Erro ao exportar: {e}",
-        "scale_ok": "[ESCALA] Dados normalizados usando '{method}'.",
-        "outlier_rem": "[OUTLIERS] {qtd} outliers removidos (Método IQR).",
-        "api_start": "[API] Servidor iniciado em http://127.0.0.1:8000/docs",
-        "trans_money": "[TRANSFORMAR] '{col}' convertida para Moeda (float).",
-        "trans_num": "[TRANSFORMAR] '{col}' limpa (apenas dígitos).",
-        "trans_email": "[TRANSFORMAR] '{col}' normalizada para E-mail.",
-        "trans_date": "[TRANSFORMAR] '{col}' convertida para Data.",
-        "trans_err": "[ERRO] Regra '{rule}' desconhecida ou falha.",
-        "help_title": "\n[AJUDA] Comandos disponíveis em '{lang}':\n",
-    },
-    "en": {
-        "load_ok": "[LOAD] Data loaded: {rows} rows x {cols} cols.",
-        "load_err": "[ERROR] Failed to load: {e}",
-        "view": "\n[VIEW] {header}:",
-        "clean_cols": "[CLEAN] Column names standardized.",
-        "clean_txt": "[CLEAN] Text in column '{col}' normalized.",
-        "drop_null": "[DROP] {qtd} rows with nulls removed.",
-        "fill_null": "[FILL] Nulls filled with '{val}'.",
-        "date_conv": "[DATE] Column '{col}' converted to datetime.",
-        "col_add": "[ADD] Column '{col}' created.",
-        "filter": "[FILTER] '{query}': {before} -> {after} rows.",
-        "sort": "[SORT] Sorted by {cols}.",
-        "join": "[JOIN] Tables merged ({how}). Rows: {before} -> {after}",
-        "plot_err": "[ERROR] Failed to plot: {e}",
-        "stats": "\n[STATS] Statistical Summary:",
-        "types": "\n[TYPES] Data Types:",
-        "save": "[SAVE] File saved at: {path}",
-        "ml_start": "\n[AUTO-ML] Starting training to predict: '{target}'...",
-        "ml_ignore_date": "   [INFO] Ignoring raw date columns: {cols}",
-        "ml_feats": "   - Features processed: {n} cols (after encoding).",
-        "ml_success_clf": "   Classifier Model trained!",
-        "ml_success_reg": "   Regressor Model trained!",
-        "ml_acc": "   Accuracy: {score:.2%}",
-        "ml_r2": "   R² Score: {score:.4f}",
-        "ml_saved": "   Shielded model saved at: {path}",
-        "ia_loaded": "[AI] Model loaded! Expects {n} columns.",
-        "pred_done": "[PREDICT] Predictions generated in column '{col}'.",
-        "err_load_ia": "You need to use .load_ai() before predicting!",
-        "sql_ok": "[SQL] Table '{tb}' successfully exported to database.",
-        "sql_err": "[SQL] Error exporting: {e}",
-        "scale_ok": "[SCALE] Data normalized using '{method}'.",
-        "outlier_rem": "[OUTLIERS] {qtd} outliers removed (IQR Method).",
-        "api_start": "[API] Server started at http://127.0.0.1:8000/docs",
-        "trans_money": "[TRANSFORM] '{col}' converted to Currency (float).",
-        "trans_num": "[TRANSFORM] '{col}' cleaned (digits only).",
-        "trans_email": "[TRANSFORM] '{col}' normalized to E-mail.",
-        "trans_date": "[TRANSFORM] '{col}' converted to Date.",
-        "trans_err": "[ERROR] Rule '{rule}' unknown or failed.",
-        "help_title": "\n[HELP] Available commands in '{lang}':\n",
-    },
-    "zh": {
-        "load_ok": "[加载] 数据已加载：{rows} 行 x {cols} 列。",
-        "load_err": "[错误] 加载失败：{e}",
-        "view": "\n[查看] {header}：",
-        "clean_cols": "[清洗] 列名已标准化。",
-        "clean_txt": "[清洗] 列 '{col}' 的文本已规范化。",
-        "drop_null": "[移除] 已移除 {qtd} 行空值。",
-        "fill_null": "[填充] 空值已填充为 '{val}'。",
-        "date_conv": "[日期] 列 '{col}' 已转换为日期格式。",
-        "col_add": "[创建] 列 '{col}' 已创建。",
-        "filter": "[过滤] '{query}': {before} -> {after} 行。",
-        "sort": "[排序] 按 {cols} 排序。",
-        "join": "[合并] 表格已合并 ({how})。行数: {before} -> {after}",
-        "plot_err": "[错误] 绘图失败：{e}",
-        "stats": "\n[统计] 统计摘要：",
-        "types": "\n[类型] 数据类型：",
-        "save": "[保存] 文件已保存至：{path}",
-        "ml_start": "\n[自动机器学习] 开始训练预测：'{target}'...",
-        "ml_ignore_date": "   [信息] 忽略原始日期列：{cols}",
-        "ml_feats": "   - 特征处理：{n} 列（编码后）。",
-        "ml_success_clf": "   分类模型训练完成！",
-        "ml_success_reg": "   回归模型训练完成！",
-        "ml_acc": "   准确率：{score:.2%}",
-        "ml_r2": "   R² 分数：{score:.4f}",
-        "ml_saved": "   模型已保存至：{path}",
-        "ia_loaded": "[AI] 模型已加载！预期 {n} 列。",
-        "pred_done": "[预测] 预测结果已生成在 '{col}' 列。",
-        "err_load_ia": "预测前请先使用 .load_ai()！",
-        "sql_ok": "[SQL] 表 '{tb}' 已成功导出到数据库。",
-        "sql_err": "[SQL] 导出错误：{e}",
-        "scale_ok": "[缩放] 数据已使用 '{method}' 标准化。",
-        "outlier_rem": "[异常值] 已移除 {qtd} 个异常值 (IQR 方法)。",
-        "api_start": "[API] 服务器已启动 http://127.0.0.1:8000/docs",
-        "trans_money": "[转换] '{col}' 已转换为货币 (float)。",
-        "trans_num": "[转换] '{col}' 已清洗 (仅数字)。",
-        "trans_email": "[转换] '{col}' 已标准化为电子邮件。",
-        "trans_date": "[转换] '{col}' 已转换为日期。",
-        "trans_err": "[错误] 规则 '{rule}' 未知或失败。",
-        "help_title": "\n[帮助] '{lang}' 可用命令：\n",
-    },
-    "hi": {
-        "load_ok": "[LOAD] Data load ho gaya: {rows} rows x {cols} cols.",
-        "load_err": "[ERROR] Load karne mein fail: {e}",
-        "view": "\n[DEKHE] {header}:",
-        "clean_cols": "[SAFAI] Column ke naam standardize kiye gaye.",
-        "clean_txt": "[SAFAI] Column '{col}' ka text theek kiya gaya.",
-        "drop_null": "[HATAYE] {qtd} rows null hataye gaye.",
-        "fill_null": "[BHARE] Nulls ko '{val}' se bhara gaya.",
-        "date_conv": "[TARIKH] Column '{col}' date mein badla gaya.",
-        "col_add": "[BANAYE] Column '{col}' banaya gaya.",
-        "filter": "[FILTER] '{query}': {before} -> {after} rows.",
-        "sort": "[SORT] {cols} ke hisaab se sort kiya.",
-        "join": "[JODE] Tables jode gaye ({how}). Rows: {before} -> {after}",
-        "plot_err": "[ERROR] Plot karne mein fail: {e}",
-        "stats": "\n[STATS] Sankhyiki Saar:",
-        "types": "\n[TYPES] Data Types:",
-        "save": "[SAVE] File save kiya gaya: {path}",
-        "ml_start": "\n[AUTO-ML] Training shuru: '{target}'...",
-        "ml_ignore_date": "   [INFO] Raw date columns ignore kar rahe hain: {cols}",
-        "ml_feats": "   - Features processed: {n} cols (encoding ke baad).",
-        "ml_success_clf": "   Model train ho gaya (Classifier)!",
-        "ml_success_reg": "   Model train ho gaya (Regressor)!",
-        "ml_acc": "   Accuracy: {score:.2%}",
-        "ml_r2": "   R² Score: {score:.4f}",
-        "ml_saved": "   Model save kiya gaya: {path}",
-        "ia_loaded": "[AI] Model load hua! {n} columns chahiye.",
-        "pred_done": "[PREDICT] Bhavishya '{col}' mein likha gaya.",
-        "err_load_ia": "Predict karne se pehle .load_ai() use karein!",
-        "sql_ok": "[SQL] Table '{tb}' database mein export ho gaya.",
-        "sql_err": "[SQL] Export mein galti: {e}",
-        "scale_ok": "[SCALE] Data '{method}' se normalize kiya gaya.",
-        "outlier_rem": "[OUTLIERS] {qtd} outliers hataye gaye (IQR Method).",
-        "api_start": "[API] Server shuru hua http://127.0.0.1:8000/docs par",
-        "trans_money": "[BADLAV] '{col}' currency (float) mein badla gaya.",
-        "trans_num": "[BADLAV] '{col}' saaf kiya gaya (keval ank).",
-        "trans_email": "[BADLAV] '{col}' E-mail ke liye theek kiya gaya.",
-        "trans_date": "[BADLAV] '{col}' Tarikh mein badla gaya.",
-        "trans_err": "[ERROR] Rule '{rule}' galat hai ya fail ho gayi.",
-        "help_title": "\n[MADAD] '{lang}' mein commands:\n",
-    }
-}
-
-METHOD_ALIASES = {
-    "corrigir_colunas": ["fix_columns", "修正列名", "column_sudhare"],
-    "limpar_texto":      ["clean_text",       "清洗文本",   "text_safai"],
-    "remover_nulos":     ["remove_nulls",     "移除空值",   "null_hataye"],
-    "converter_data":    ["convert_date",     "转换日期",   "date_badlo"],
-    "criar_coluna":      ["create_column",    "创建列",     "column_banaye"],
-    "filtrar":           ["filter_data",      "过滤数据",   "filter_kare"],
-    "ordenar":           ["sort_data",        "排序数据",   "sort_kare"],
-    "unir":              ["join_data",        "合并数据",   "jode"],
-    "plotar":            ["plot_chart",       "绘制图表",   "graph_banaye"],
-    "resumo_estatistico":["stats_summary",    "统计摘要",   "stats_dekhe"],
-    "salvar":            ["save_file",        "保存文件",   "save_kare"],
-    "auto_ml":           ["train_automl",     "自动训练",   "automl_kare"],
-    "carregar_ia":       ["load_ai",          "加载模型",   "ai_load_kare"],
-    "prever":            ["predict",          "预测",       "bhavishya_bataye"],
-    "ver":               ["view",             "查看",       "dekhe"],
-    "ajuda":             ["help",             "帮助",       "madad"],
-    "agrupar":           ["group_by",          "分组",       "samuh_banaye"],
-    "tabela_dinamica":   ["pivot_table",       "透视表",     "pivot_table"],
-    "exportar_sql":      ["export_sql",        "导出SQL",    "sql_export"],
-    "matriz_correlacao": ["correlation_matrix","相关矩阵",   "sambandh_matrix"],
-    "tratar_outliers":   ["handle_outliers",   "处理异常值", "outliers_hataye"],
-    "escalonar":         ["scale_data",        "数据缩放",   "scale_kare"],
-    "servir_api":        ["serve_api",         "启动API",    "api_chalu_kare"],
-    "transformar":       ["transform",         "数据转换",   "badlav_kare"]
-}
 
 class Sanice:
     """
@@ -217,6 +28,197 @@ class Sanice:
     -----------------------------------------------------------------------------
     Framework para limpar, transformar e modelar dados automaticamente.
     """
+
+    I18N = {
+        "pt": {
+            "load_ok": "[CARREGAR] Dados carregados: {rows} linhas x {cols} colunas.",
+            "load_err": "[ERRO] Falha ao carregar: {e}",
+            "view": "\n[VISUALIZAR] {header}:",
+            "clean_cols": "[LIMPEZA] Nomes das colunas padronizados.",
+            "clean_txt": "[LIMPEZA] Texto da coluna '{col}' normalizado.",
+            "drop_null": "[REMOVER] {qtd} linhas com nulos removidas.",
+            "fill_null": "[PREENCHER] Nulos preenchidos com '{val}'.",
+            "date_conv": "[DATA] Coluna '{col}' convertida para data.",
+            "col_add": "[CRIAR] Coluna '{col}' criada.",
+            "filter": "[FILTRO] '{query}': {before} -> {after} linhas.",
+            "sort": "[ORDENAR] Ordenado por {cols}.",
+            "join": "[UNIR] Tabelas unidas ({how}). Linhas: {before} -> {after}",
+            "plot_err": "[ERRO] Falha ao plotar: {e}",
+            "stats": "\n[ESTATÍSTICAS] Resumo Estatístico:",
+            "types": "\n[TIPOS] Tipos de Dados:",
+            "save": "[SALVAR] Arquivo salvo em: {path}",
+            "ml_start": "\n[AUTO-ML] Iniciando treinamento para prever: '{target}'...",
+            "ml_ignore_date": "   [INFO] Ignorando colunas de data crua: {cols}",
+            "ml_feats": "   - Features processadas: {n} colunas (após encoding).",
+            "ml_success_clf": "   Modelo Classificador treinado!",
+            "ml_success_reg": "   Modelo Regressor treinado!",
+            "ml_acc": "   Acurácia: {score:.2%}",
+            "ml_r2": "   R² Score: {score:.4f}",
+            "ml_saved": "   Modelo blindado salvo em: {path}",
+            "ia_loaded": "[IA] Modelo carregado! Espera {n} colunas.",
+            "pred_done": "[PREVISÃO] Previsões geradas na coluna '{col}'.",
+            "err_load_ia": "Você precisa usar .carregar_ia() antes de prever!",
+            "sql_ok": "[SQL] Tabela '{tb}' exportada com sucesso para o banco.",
+            "sql_err": "[SQL] Erro ao exportar: {e}",
+            "scale_ok": "[ESCALA] Dados normalizados usando '{method}'.",
+            "outlier_rem": "[OUTLIERS] {qtd} outliers removidos (Método IQR).",
+            "api_start": "[API] Servidor iniciado em http://127.0.0.1:8000/docs",
+            "trans_money": "[TRANSFORMAR] '{col}' convertida para Moeda (float).",
+            "trans_num": "[TRANSFORMAR] '{col}' limpa (apenas dígitos).",
+            "trans_email": "[TRANSFORMAR] '{col}' normalizada para E-mail.",
+            "trans_date": "[TRANSFORMAR] '{col}' convertida para Data.",
+            "trans_err": "[ERRO] Regra '{rule}' desconhecida ou falha.",
+            "help_title": "\n[AJUDA] Comandos disponíveis em '{lang}':\n",
+        },
+        "en": {
+            "load_ok": "[LOAD] Data loaded: {rows} rows x {cols} cols.",
+            "load_err": "[ERROR] Failed to load: {e}",
+            "view": "\n[VIEW] {header}:",
+            "clean_cols": "[CLEAN] Column names standardized.",
+            "clean_txt": "[CLEAN] Text in column '{col}' normalized.",
+            "drop_null": "[DROP] {qtd} rows with nulls removed.",
+            "fill_null": "[FILL] Nulls filled with '{val}'.",
+            "date_conv": "[DATE] Column '{col}' converted to datetime.",
+            "col_add": "[ADD] Column '{col}' created.",
+            "filter": "[FILTER] '{query}': {before} -> {after} rows.",
+            "sort": "[SORT] Sorted by {cols}.",
+            "join": "[JOIN] Tables merged ({how}). Rows: {before} -> {after}",
+            "plot_err": "[ERROR] Failed to plot: {e}",
+            "stats": "\n[STATS] Statistical Summary:",
+            "types": "\n[TYPES] Data Types:",
+            "save": "[SAVE] File saved at: {path}",
+            "ml_start": "\n[AUTO-ML] Starting training to predict: '{target}'...",
+            "ml_ignore_date": "   [INFO] Ignoring raw date columns: {cols}",
+            "ml_feats": "   - Features processed: {n} cols (after encoding).",
+            "ml_success_clf": "   Classifier Model trained!",
+            "ml_success_reg": "   Regressor Model trained!",
+            "ml_acc": "   Accuracy: {score:.2%}",
+            "ml_r2": "   R² Score: {score:.4f}",
+            "ml_saved": "   Shielded model saved at: {path}",
+            "ia_loaded": "[AI] Model loaded! Expects {n} columns.",
+            "pred_done": "[PREDICT] Predictions generated in column '{col}'.",
+            "err_load_ia": "You need to use .load_ai() before predicting!",
+            "sql_ok": "[SQL] Table '{tb}' successfully exported to database.",
+            "sql_err": "[SQL] Error exporting: {e}",
+            "scale_ok": "[SCALE] Data normalized using '{method}'.",
+            "outlier_rem": "[OUTLIERS] {qtd} outliers removed (IQR Method).",
+            "api_start": "[API] Server started at http://127.0.0.1:8000/docs",
+            "trans_money": "[TRANSFORM] '{col}' converted to Currency (float).",
+            "trans_num": "[TRANSFORM] '{col}' cleaned (digits only).",
+            "trans_email": "[TRANSFORM] '{col}' normalized to E-mail.",
+            "trans_date": "[TRANSFORM] '{col}' converted to Date.",
+            "trans_err": "[ERROR] Rule '{rule}' unknown or failed.",
+            "help_title": "\n[HELP] Available commands in '{lang}':\n",
+        },
+        "zh": {
+            "load_ok": "[加载] 数据已加载：{rows} 行 x {cols} 列。",
+            "load_err": "[错误] 加载失败：{e}",
+            "view": "\n[查看] {header}：",
+            "clean_cols": "[清洗] 列名已标准化。",
+            "clean_txt": "[清洗] 列 '{col}' 的文本已规范化。",
+            "drop_null": "[移除] 已移除 {qtd} 行空值。",
+            "fill_null": "[填充] 空值已填充为 '{val}'。",
+            "date_conv": "[日期] 列 '{col}' 已转换为日期格式。",
+            "col_add": "[创建] 列 '{col}' 已创建。",
+            "filter": "[过滤] '{query}': {before} -> {after} 行。",
+            "sort": "[排序] 按 {cols} 排序。",
+            "join": "[合并] 表格已合并 ({how})。行数: {before} -> {after}",
+            "plot_err": "[错误] 绘图失败：{e}",
+            "stats": "\n[统计] 统计摘要：",
+            "types": "\n[类型] 数据类型：",
+            "save": "[保存] 文件已保存至：{path}",
+            "ml_start": "\n[自动机器学习] 开始训练预测：'{target}'...",
+            "ml_ignore_date": "   [信息] 忽略原始日期列：{cols}",
+            "ml_feats": "   - 特征处理：{n} 列（编码后）。",
+            "ml_success_clf": "   分类模型训练完成！",
+            "ml_success_reg": "   回归模型训练完成！",
+            "ml_acc": "   准确率：{score:.2%}",
+            "ml_r2": "   R² 分数：{score:.4f}",
+            "ml_saved": "   模型已保存至：{path}",
+            "ia_loaded": "[AI] 模型已加载！预期 {n} 列。",
+            "pred_done": "[预测] 预测结果已生成在 '{col}' 列。",
+            "err_load_ia": "预测前请先使用 .load_ai()！",
+            "sql_ok": "[SQL] 表 '{tb}' 已成功导出到数据库。",
+            "sql_err": "[SQL] 导出错误：{e}",
+            "scale_ok": "[缩放] 数据已使用 '{method}' 标准化。",
+            "outlier_rem": "[异常值] 已移除 {qtd} 个异常值 (IQR 方法)。",
+            "api_start": "[API] 服务器已启动 http://127.0.0.1:8000/docs",
+            "trans_money": "[转换] '{col}' 已转换为货币 (float)。",
+            "trans_num": "[转换] '{col}' 已清洗 (仅数字)。",
+            "trans_email": "[转换] '{col}' 已标准化为电子邮件。",
+            "trans_date": "[转换] '{col}' 已转换为日期。",
+            "trans_err": "[错误] 规则 '{rule}' 未知或失败。",
+            "help_title": "\n[帮助] '{lang}' 可用命令：\n",
+        },
+        "hi": {
+            "load_ok": "[LOAD] Data load ho gaya: {rows} rows x {cols} cols.",
+            "load_err": "[ERROR] Load karne mein fail: {e}",
+            "view": "\n[DEKHE] {header}:",
+            "clean_cols": "[SAFAI] Column ke naam standardize kiye gaye.",
+            "clean_txt": "[SAFAI] Column '{col}' ka text theek kiya gaya.",
+            "drop_null": "[HATAYE] {qtd} rows null hataye gaye.",
+            "fill_null": "[BHARE] Nulls ko '{val}' se bhara gaya.",
+            "date_conv": "[TARIKH] Column '{col}' date mein badla gaya.",
+            "col_add": "[BANAYE] Column '{col}' banaya gaya.",
+            "filter": "[FILTER] '{query}': {before} -> {after} rows.",
+            "sort": "[SORT] {cols} ke hisaab se sort kiya.",
+            "join": "[JODE] Tables jode gaye ({how}). Rows: {before} -> {after}",
+            "plot_err": "[ERROR] Plot karne mein fail: {e}",
+            "stats": "\n[STATS] Sankhyiki Saar:",
+            "types": "\n[TYPES] Data Types:",
+            "save": "[SAVE] File save kiya gaya: {path}",
+            "ml_start": "\n[AUTO-ML] Training shuru: '{target}'...",
+            "ml_ignore_date": "   [INFO] Raw date columns ignore kar rahe hain: {cols}",
+            "ml_feats": "   - Features processed: {n} cols (encoding ke baad).",
+            "ml_success_clf": "   Model train ho gaya (Classifier)!",
+            "ml_success_reg": "   Model train ho gaya (Regressor)!",
+            "ml_acc": "   Accuracy: {score:.2%}",
+            "ml_r2": "   R² Score: {score:.4f}",
+            "ml_saved": "   Model save kiya gaya: {path}",
+            "ia_loaded": "[AI] Model load hua! {n} columns chahiye.",
+            "pred_done": "[PREDICT] Bhavishya '{col}' mein likha gaya.",
+            "err_load_ia": "Predict karne se pehle .load_ai() use karein!",
+            "sql_ok": "[SQL] Table '{tb}' database mein export ho gaya.",
+            "sql_err": "[SQL] Export mein galti: {e}",
+            "scale_ok": "[SCALE] Data '{method}' se normalize kiya gaya.",
+            "outlier_rem": "[OUTLIERS] {qtd} outliers hataye gaye (IQR Method).",
+            "api_start": "[API] Server shuru hua http://127.0.0.1:8000/docs par",
+            "trans_money": "[BADLAV] '{col}' currency (float) mein badla gaya.",
+            "trans_num": "[BADLAV] '{col}' saaf kiya gaya (keval ank).",
+            "trans_email": "[BADLAV] '{col}' E-mail ke liye theek kiya gaya.",
+            "trans_date": "[BADLAV] '{col}' Tarikh mein badla gaya.",
+            "trans_err": "[ERROR] Rule '{rule}' galat hai ya fail ho gayi.",
+            "help_title": "\n[MADAD] '{lang}' mein commands:\n",
+        }
+    }
+
+    METHOD_ALIASES = {
+        "corrigir_colunas": ["fix_columns", "修正列名", "column_sudhare"],
+        "limpar_texto":      ["clean_text",       "清洗文本",   "text_safai"],
+        "remover_nulos":     ["remove_nulls",     "移除空值",   "null_hataye"],
+        "converter_data":    ["convert_date",     "转换日期",   "date_badlo"],
+        "criar_coluna":      ["create_column",    "创建列",     "column_banaye"],
+        "filtrar":           ["filter_data",      "过滤数据",   "filter_kare"],
+        "ordenar":           ["sort_data",        "排序数据",   "sort_kare"],
+        "unir":              ["join_data",        "合并数据",   "jode"],
+        "plotar":            ["plot_chart",       "绘制图表",   "graph_banaye"],
+        "resumo_estatistico":["stats_summary",    "统计摘要",   "stats_dekhe"],
+        "salvar":            ["save_file",        "保存文件",   "save_kare"],
+        "auto_ml":           ["train_automl",     "自动训练",   "automl_kare"],
+        "carregar_ia":       ["load_ai",          "加载模型",   "ai_load_kare"],
+        "prever":            ["predict",          "预测",       "bhavishya_bataye"],
+        "ver":               ["view",             "查看",       "dekhe"],
+        "ajuda":             ["help",             "帮助",       "madad"],
+        "agrupar":           ["group_by",          "分组",       "samuh_banaye"],
+        "tabela_dinamica":   ["pivot_table",       "透视表",     "pivot_table"],
+        "exportar_sql":      ["export_sql",        "导出SQL",    "sql_export"],
+        "matriz_correlacao": ["correlation_matrix","相关矩阵",   "sambandh_matrix"],
+        "tratar_outliers":   ["handle_outliers",   "处理异常值", "outliers_hataye"],
+        "escalonar":         ["scale_data",        "数据缩放",   "scale_kare"],
+        "servir_api":        ["serve_api",         "启动API",    "api_chalu_kare"],
+        "transformar":       ["transform",         "数据转换",   "badlav_kare"]
+    }
+
     def __init__(self, fonte_dados, lang="pt"):
         self.lang = lang
         self.df = None
@@ -241,8 +243,8 @@ class Sanice:
             self._log("load_err", e=str(e))
 
     def _log(self, key, **kwargs):
-        lang_dict = I18N.get(self.lang, I18N["en"])
-        msg = lang_dict.get(key, I18N["en"].get(key, ""))
+        lang_dict = self.I18N.get(self.lang, self.I18N["en"])
+        msg = lang_dict.get(key, self.I18N["en"].get(key, ""))
         if msg:
             print(msg.format(**kwargs))
 
@@ -250,23 +252,24 @@ class Sanice:
         if self.lang == "pt": return
         idx_map = {"en": 0, "zh": 1, "hi": 2}
         idx = idx_map.get(self.lang, 0)
-
-        for metodo_pt, aliases in METHOD_ALIASES.items():
+        for metodo_pt, aliases in self.METHOD_ALIASES.items():
             try:
                 alias_name = aliases[idx]
                 metodo_original = getattr(self, metodo_pt)
                 setattr(self, alias_name, metodo_original)
             except IndexError:
-                pass 
+                pass
 
     def ajuda(self):
         self._log("help_title", lang=self.lang)
         if self.lang == "pt":
-            cmds = [m for m in METHOD_ALIASES.keys()]
+            # MUDANÇA: self.METHOD_ALIASES
+            cmds = [m for m in self.METHOD_ALIASES.keys()]
         else:
             idx_map = {"en": 0, "zh": 1, "hi": 2}
             idx = idx_map.get(self.lang, 0)
-            cmds = [aliases[idx] for aliases in METHOD_ALIASES.values()]
+            # MUDANÇA: self.METHOD_ALIASES
+            cmds = [aliases[idx] for aliases in self.METHOD_ALIASES.values()]
         print(", ".join([f".{c}()" for c in cmds]))
         return self
 
@@ -551,7 +554,7 @@ class Sanice:
     def prever(self, nome_coluna_saida="previsao"):
         if not hasattr(self, 'modelo_ativo'):
             print("Carregue a IA primeiro!")
-            print(I18N.get(self.lang, I18N["en"])["err_load_ia"])
+            print(self.I18N.get(self.lang, self.I18N["en"])["err_load_ia"])
             return self
 
         try:
@@ -618,3 +621,60 @@ class Sanice:
             print("Instale as libs: pip install fastapi uvicorn")
         except Exception as e:
             print(f"Erro API: {e}")
+    
+def cli():
+    import sys
+    
+    VERSION = "1.0.5"
+
+    CLI_MSGS = {
+        "en": "To use inside Python:",
+        "pt": "Para usar no script Python:",
+        "zh": "在 Python 脚本中使用：",
+        "hi": "Python script mein use karne ke liye:"
+    }
+
+    CMD_MAP = {
+        "help": "en",
+        "--help": "en",
+        "-h": "en",
+        "ajuda": "pt",
+        "socorro": "pt",
+        "bangzhu": "zh",
+        "madad": "hi"
+    }
+
+    args = sys.argv
+    comando = args[1].lower() if len(args) > 1 else ""
+
+    if comando in ["-v", "--version", "version", "versao", "-version"]:
+        print(f"Sanice v{VERSION}")
+        return
+
+    if comando in CMD_MAP:
+        
+        lang_padrao = CMD_MAP[comando]
+        user_lang = args[2] if len(args) > 2 else lang_padrao
+        
+        if user_lang not in CLI_MSGS: user_lang = "en"
+        msg = CLI_MSGS[user_lang]
+
+        print(f"\n=== Sanice CLI Help ({user_lang.upper()}) ===")
+        print(f"\n{msg}")
+        print(f"  from sanice import Sanice")
+        print(f"  app = Sanice('data.csv', lang='{user_lang}')")
+        print(f"\nReference / Referência (PT | EN | ZH | HI):")
+        print("-" * 75)
+        
+        for pt_method, aliases in Sanice.METHOD_ALIASES.items():
+            en, zh, hi = aliases[0], aliases[1], aliases[2]
+            print(f"  {pt_method:<20} | {en:<18} | {zh:<8} | {hi}")
+            
+        print("-" * 75)
+        print(f"v{VERSION}")
+
+    else:
+        print(f"Sanice v{VERSION} installed! Try:")
+        print("  sanice help     (English)")
+        print("  sanice ajuda    (Português)")
+        print("  sanice --version")
