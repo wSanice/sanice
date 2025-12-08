@@ -625,7 +625,7 @@ class Sanice:
 def cli():
     import sys
     
-    VERSION = "1.0.5"
+    VERSION = "1.0.6"
 
     CLI_MSGS = {
         "en": "To use inside Python:",

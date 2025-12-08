@@ -19,7 +19,7 @@
 
 ---
 <details>
-<summary><b>Release v1.0.5: Architecture Refactoring & Encapsulation</b></summary>
+<summary><b>Release v1.0.6: Architecture Refactoring & Encapsulation</b></summary>
 <br>
 
 This version focuses on improving Code Quality and the library's internal architecture, in addition to important documentation fixes.
@@ -226,7 +226,7 @@ This project is licensed under the Apache License, Version 2.0. See the [LICENSE
 ---
 
 <details>
-<summary><b>Atualização v1.0.5: Refatoração de Arquitetura & Encapsulamento</b></summary>
+<summary><b>Atualização v1.0.6: Refatoração de Arquitetura & Encapsulamento</b></summary>
 <br>
 
 Esta versão foca na melhoria da qualidade do código (Code Quality) e na arquitetura interna da biblioteca, além de correções importantes na documentação.

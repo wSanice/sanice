@@ -23,7 +23,7 @@ except FileNotFoundError:
 
 setup(
     name="sanice",
-    version="1.0.5",
+    version="1.0.6",
     author="wSanice",
     author_email="wansanice@proton.me",
     description="Biblioteca fluente para Data Science ágil (ETL, AutoML e Plotting).",
@@ -55,5 +55,15 @@ setup(
     extras_require={
         "api": ["fastapi>=0.95.0", "uvicorn>=0.22.0", "pydantic>=1.10.0"],
         "dev": ["pytest", "twine", "wheel"]
+    },
+    entry_points={
+        "console_scripts": [
+            "sanice=sanice.core:cli", 
+        ],
+    },    
+    project_urls={
+        "Homepage": "https://github.com/wSanice/sanice",
+        "Source": "https://github.com/wSanice/sanice",
+        "Funding": "https://github.com/sponsors/wSanice", 
     },
 )
