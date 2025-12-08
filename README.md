@@ -5,6 +5,8 @@
 (Sistema Automatizado de Normalização, Inteligência Computacional e Estatística)<br>
 > (System for Automated Normalization, Intelligence, Computation, and Statistics)
 
+
+
 ![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue)
 ![Status](https://img.shields.io/badge/status-stable-brightgreen)
@@ -12,6 +14,9 @@
 [🇺🇸 English](#-english) | [🇧🇷 Português](#-português) | [🇨🇳 &nbsp; 🇮🇳 &nbsp;Multi-language](#-Multilanguage)
 
 </div>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/wSanice/sanice/refs/heads/main/assets/sanice.png" alt="Sanice Banner" width="100%"/>
+</p>
 
 ---
 
