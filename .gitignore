@@ -2,3 +2,5 @@ venv/
 .pkl
 __pycache__/
 *.pyc
+/dist
+/sanice.egg-info
