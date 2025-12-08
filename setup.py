@@ -41,6 +41,7 @@ setup(
     ],
     python_requires=">=3.8",
     install_requires=[
+        "numpy>=1.21.0",
         "pandas>=2.0.0",
         "matplotlib>=3.7.0",
         "seaborn>=0.12.0",
