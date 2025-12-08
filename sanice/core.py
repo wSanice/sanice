@@ -31,6 +31,8 @@ class Sanice:
 
     I18N = {
         "pt": {
+            "auto_date": "[SMART] Data detectada e convertida na coluna: '{col}'",
+            "auto_mem": "[SMART] Memória otimizada! {n} colunas convertidas para 'category'.",
             "load_ok": "[CARREGAR] Dados carregados: {rows} linhas x {cols} colunas.",
             "load_err": "[ERRO] Falha ao carregar: {e}",
             "view": "\n[VISUALIZAR] {header}:",
@@ -71,6 +73,8 @@ class Sanice:
             "help_title": "\n[AJUDA] Comandos disponíveis em '{lang}':\n",
         },
         "en": {
+            "auto_date": "[SMART] Date detected and converted in column: '{col}'",
+            "auto_mem": "[SMART] Memory optimized! {n} columns converted to 'category'.",
             "load_ok": "[LOAD] Data loaded: {rows} rows x {cols} cols.",
             "load_err": "[ERROR] Failed to load: {e}",
             "view": "\n[VIEW] {header}:",
@@ -111,6 +115,8 @@ class Sanice:
             "help_title": "\n[HELP] Available commands in '{lang}':\n",
         },
         "zh": {
+            "auto_date": "[智能] 检测到日期并已转换列：'{col}'",
+            "auto_mem": "[智能] 内存已优化！{n} 列已转换为 'category'。",
             "load_ok": "[加载] 数据已加载：{rows} 行 x {cols} 列。",
             "load_err": "[错误] 加载失败：{e}",
             "view": "\n[查看] {header}：",
@@ -151,6 +157,8 @@ class Sanice:
             "help_title": "\n[帮助] '{lang}' 可用命令：\n",
         },
         "hi": {
+            "auto_date": "[SMART] '{col}' mein date mili aur convert ho gayi.",
+            "auto_mem": "[SMART] Memory bachayi gayi! {n} columns 'category' ban gaye.",
             "load_ok": "[LOAD] Data load ho gaya: {rows} rows x {cols} cols.",
             "load_err": "[ERROR] Load karne mein fail: {e}",
             "view": "\n[DEKHE] {header}:",
@@ -219,7 +227,7 @@ class Sanice:
         "transformar":       ["transform",         "数据转换",   "badlav_kare"]
     }
 
-    def __init__(self, fonte_dados, lang="pt"):
+    def __init__(self, fonte_dados, lang="pt", smart_run=False):
         self.lang = lang
         self.df = None
         self.scaler = None
@@ -236,6 +244,9 @@ class Sanice:
             
             if self.df is not None:
                 self._log("load_ok", rows=self.df.shape[0], cols=self.df.shape[1])
+                if smart_run:
+                    self._tentar_converter_datas()
+                    self._otimizar_memoria()
             else:
                 raise ValueError("Format not supported / Formato não suportado.")
                 
@@ -259,6 +270,36 @@ class Sanice:
                 setattr(self, alias_name, metodo_original)
             except IndexError:
                 pass
+
+
+    def _tentar_converter_datas(self):
+        colunas_texto = self.df.select_dtypes(include=['object']).columns
+    
+        for col in colunas_texto:
+            temp = pd.to_datetime(self.df[col], errors='coerce')
+            nao_nulos = self.df[col].dropna().shape[0]
+            if nao_nulos > 0:
+                validos = temp.dropna().shape[0]
+                taxa_sucesso = validos / nao_nulos
+                
+                if taxa_sucesso > 0.8:
+                    self.df[col] = temp
+                    self._log("auto_date", col=col)
+
+    def _otimizar_memoria(self):
+        """Converte colunas com alta repetição para 'category' para economizar RAM"""
+        colunas_texto = self.df.select_dtypes(include=['object']).columns
+        convertidas = 0
+        total_linhas = len(self.df)
+        
+        for col in colunas_texto:
+            unicos = self.df[col].nunique()
+            if total_linhas > 100 and (unicos / total_linhas) < 0.5:
+                self.df[col] = self.df[col].astype('category')
+                convertidas += 1
+        
+        if convertidas > 0:
+            self._log("auto_mem", n=convertidas)
 
     def ajuda(self):
         self._log("help_title", lang=self.lang)
@@ -625,7 +666,7 @@ class Sanice:
 def cli():
     import sys
     
-    VERSION = "1.0.6"
+    VERSION = "1.0.7"
 
     CLI_MSGS = {
         "en": "To use inside Python:",

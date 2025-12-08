@@ -19,22 +19,31 @@
 
 ---
 <details>
-<summary><b>Release v1.0.6: Architecture Refactoring & Encapsulation</b></summary>
+<summary><b>Version v1.0.7: Architecture Refactoring & Encapsulation</b></summary>
 <br>
 
-This version focuses on improving Code Quality and the library's internal architecture, in addition to important documentation fixes.
+This version focuses on **Performance** and **Data Engineering**, solving memory consumption issues in large datasets (Big Data/High Cardinality) and simplifying date cleaning.
 
-### Architectural Changes (Encapsulation)
-We refactored the library core (`core.py`) to follow Object-Oriented Programming best practices:
-* **Constant Encapsulation:** The `I18N` (translations) and `METHOD_ALIASES` (method aliases) dictionaries were moved from the global scope to inside the `Sanice` class.
-* **Clean Namespace:** Avoids global scope "pollution" when importing the library, preventing conflicts with other libs.
-* **Instance Access:** All internal methods now access configurations via `self.I18N` and `self.METHOD_ALIASES`, facilitating future inheritance and class extension.
+### New Features (Smart Run)
+Added the `smart_run=True` parameter to the class constructor:
+* **Memory Optimization:** Automatically detects columns with high cardinality (repetitive data) and converts them to `category`, drastically reducing RAM usage.
+* **Auto-Date:** Scans the dataset for text columns that look like dates and converts them automatically.
 
-### Documentation
-* **Extras Installation:** The `README.md` has been updated to include the correct installation instruction for those who wish to use the API:
-  ```bash
-  pip install "sanice[api]"
-  ```
+### CLI (Command Line)
+The terminal command has been improved:
+* **Version Check:** Now supports `sanice --version` or `sanice -v`.
+* **Language Intelligence:** The command automatically detects the desired language:
+    * `sanice help` -> Opens in English.
+    * `sanice ajuda` -> Opens in Portuguese.
+    * `sanice bangzhu` -> Opens in Chinese.
+
+### Fixes
+* Fixed `setup.py` entry points to ensure the `sanice` executable is correctly created on Windows/Linux.
+
+---
+**How to update:**
+`pip install sanice --upgrade`
+
 </details>
 
 <a name="-english"></a>
@@ -61,6 +70,18 @@ sanice help    # 🇺🇸 English
 sanice bangzhu # 🇨🇳 Chinese
 sanice madad   # 🇮🇳 Hindi
 ```
+
+### Smart Optimization (v1.0.7+)
+
+Enable `smart_run` to automatically detect dates and compress memory usage by converting repetitive text to categories.
+
+```python
+from sanice import Sanice
+
+# Activates Auto-Date & Memory Optimization
+app = Sanice("large_dataset.csv", smart_run=True)
+```
+
 ### ⚡ Quick Start
 
 **How to turn a dirty CSV into a deployed AI model in minutes.**
@@ -226,22 +247,31 @@ This project is licensed under the Apache License, Version 2.0. See the [LICENSE
 ---
 
 <details>
-<summary><b>Atualização v1.0.6: Refatoração de Arquitetura & Encapsulamento</b></summary>
+<summary><b>Atualização v1.0.7: Refatoração de Arquitetura & Encapsulamento</b></summary>
 <br>
 
-Esta versão foca na melhoria da qualidade do código (Code Quality) e na arquitetura interna da biblioteca, além de correções importantes na documentação.
+Esta versão foca em **Performance** e **Engenharia de Dados**, resolvendo problemas de consumo de memória em grandes datasets (Big Data/High Cardinality) e facilitando a limpeza de datas.
 
-### Mudanças Arquiteturais (Encapsulamento)
-Refatoramos o núcleo da biblioteca (`core.py`) para seguir melhores práticas de Programação Orientada a Objetos:
-* **Encapsulamento de Constantes:** Os dicionários `I18N` (traduções) e `METHOD_ALIASES` (apelidos de métodos) foram movidos do escopo global para dentro da classe `Sanice`.
-* **Namespace Limpo:** Evita "poluição" do escopo global ao importar a biblioteca, prevenindo conflitos com outras libs.
-* **Acesso via Instância:** Todos os métodos internos agora acessam configurações via `self.I18N` e `self.METHOD_ALIASES`, facilitando futura herança e extensão da classe.
+### Novidades (Smart Features)
+Adicionamos o parâmetro `smart_run=True` no construtor da classe:
+* **Otimização de Memória:** Detecta automaticamente colunas com alta cardinalidade (muitos dados repetidos) e as converte para `category`, reduzindo drasticamente o uso de RAM.
+* **Auto-Date:** Varre o dataset em busca de colunas de texto que parecem datas e faz a conversão automática.
 
-### Documentação
-* **Instalação de Extras:** O `README.md` foi atualizado para incluir a instrução correta de instalação para quem deseja usar a API:
-  ```bash
-  pip install "sanice[api]"
-  ```
+### CLI (Linha de Comando)
+O comando de terminal foi aprimorado:
+* **Versão:** Agora suporta `sanice --version` ou `sanice -v`.
+* **Inteligência de Idioma:** O comando detecta a língua desejada automaticamente:
+    * `sanice ajuda` -> Abre em Português.
+    * `sanice help` -> Abre em Inglês.
+    * `sanice bangzhu` -> Abre em Chinês.
+
+### Correções
+* Correção no `setup.py` para garantir a criação do executável `sanice` no Windows/Linux.
+
+---
+**Como atualizar:**
+`pip install sanice --upgrade`
+
 </details>
 
 <a name="-português"></a>
@@ -269,6 +299,21 @@ Você pode verificar os comandos disponíveis direto do seu terminal, sem abrir 
 ```bash
 sanice ajuda   # 🇧🇷 Português
 ```
+
+### Otimização Inteligente (v1.0.7+)
+
+
+Ative o `smart_run` para detectar datas automaticamente e comprimir o uso de memória convertendo texto repetitivo em categorias.
+
+
+```python
+from sanice import Sanice
+
+# Ativa Auto-Data e Otimização de Memória
+app = Sanice("dados_gigantes.csv", smart_run=True)
+
+```
+
 
 ### ⚡ Início Rápido
 
@@ -473,7 +518,9 @@ Este projeto está licenciado sob a Apache License, Version 2.0. Consulte a [LIC
 <div align="right">
     <a href="#sanice">⬆️ Back to Top</a>
 </div>
+
 <br><br>
+
 <p align="center">
   <i>"Blind faith is the tool of monsters and fools. Analyze the data."</i>
 </p>
