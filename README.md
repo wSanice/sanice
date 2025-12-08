@@ -1,8 +1,10 @@
 <div align="center">
 
-# sanice
-> **S.A.N.I.C.E.**<br>
-(Sistema Automatizado de Normalização, Inteligência Computacional e Estatística)<br>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/wSanice/sanice/refs/heads/main/assets/sanice.png" alt="Sanice Banner" width="100%"/>
+  
+</p>
+> (Sistema Automatizado de Normalização, Inteligência Computacional e Estatística)<br>
 > (System for Automated Normalization, Intelligence, Computation, and Statistics)
 
 
@@ -14,9 +16,6 @@
 [🇺🇸 English](#-english) | [🇧🇷 Português](#-português) | [🇨🇳 &nbsp; 🇮🇳 &nbsp;Multi-language](#-Multilanguage)
 
 </div>
-<p align="center">
-  <img src="https://raw.githubusercontent.com/wSanice/sanice/refs/heads/main/assets/sanice.png" alt="Sanice Banner" width="100%"/>
-</p>
 
 ---
 
