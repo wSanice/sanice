@@ -339,7 +339,7 @@ class Sanice:
         return self
 
     def unir(self, outro_df, chaves, como="inner"):
-        tabela_direita = outro_df.df if isinstance(outro_df, DataFlow) else outro_df
+        tabela_direita = outro_df.df if isinstance(outro_df, Sanice) else outro_df
         antes = len(self.df)
         self.df = pd.merge(self.df, tabela_direita, on=chaves, how=como)
         self._log("join", how=como, before=antes, after=len(self.df))
