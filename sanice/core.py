@@ -33,6 +33,8 @@ class Sanice:
         "pt": {
             "auto_date": "[SMART] Data detectada e convertida na coluna: '{col}'",
             "auto_mem": "[SMART] Memória otimizada! {n} colunas convertidas para 'category'.",
+            "mongo_ok": "[MONGO] Dados exportados para coleção '{col}' com sucesso.",
+            "sql_read_ok": "[SQL] Li {rows} linhas da consulta SQL.",
             "load_ok": "[CARREGAR] Dados carregados: {rows} linhas x {cols} colunas.",
             "load_err": "[ERRO] Falha ao carregar: {e}",
             "view": "\n[VISUALIZAR] {header}:",
@@ -75,6 +77,8 @@ class Sanice:
         "en": {
             "auto_date": "[SMART] Date detected and converted in column: '{col}'",
             "auto_mem": "[SMART] Memory optimized! {n} columns converted to 'category'.",
+            "mongo_ok": "[MONGO] Data exported to collection '{col}' successfully.",
+            "sql_read_ok": "[SQL] Read {rows} rows from SQL query.",
             "load_ok": "[LOAD] Data loaded: {rows} rows x {cols} cols.",
             "load_err": "[ERROR] Failed to load: {e}",
             "view": "\n[VIEW] {header}:",
@@ -117,6 +121,8 @@ class Sanice:
         "zh": {
             "auto_date": "[智能] 检测到日期并已转换列：'{col}'",
             "auto_mem": "[智能] 内存已优化！{n} 列已转换为 'category'。",
+            "mongo_ok": "[MONGO] 数据已成功导出到集合 '{col}'。",
+            "sql_read_ok": "[SQL] 从 SQL 查询中读取了 {rows} 行。",
             "load_ok": "[加载] 数据已加载：{rows} 行 x {cols} 列。",
             "load_err": "[错误] 加载失败：{e}",
             "view": "\n[查看] {header}：",
@@ -159,6 +165,8 @@ class Sanice:
         "hi": {
             "auto_date": "[SMART] '{col}' mein date mili aur convert ho gayi.",
             "auto_mem": "[SMART] Memory bachayi gayi! {n} columns 'category' ban gaye.",
+            "mongo_ok": "[MONGO] Data '{col}' collection mein export ho gaya.",
+            "sql_read_ok": "[SQL] SQL query se {rows} rows padhe gaye.",
             "load_ok": "[LOAD] Data load ho gaya: {rows} rows x {cols} cols.",
             "load_err": "[ERROR] Load karne mein fail: {e}",
             "view": "\n[DEKHE] {header}:",
@@ -201,7 +209,8 @@ class Sanice:
     }
 
     METHOD_ALIASES = {
-        "corrigir_colunas": ["fix_columns", "修正列名", "column_sudhare"],
+        "exportar_mongo":    ["export_mongo", "导出Mongo", "mongo_bheje"],
+        "corrigir_colunas":  ["fix_columns", "修正列名", "column_sudhare"],
         "limpar_texto":      ["clean_text",       "清洗文本",   "text_safai"],
         "remover_nulos":     ["remove_nulls",     "移除空值",   "null_hataye"],
         "converter_data":    ["convert_date",     "转换日期",   "date_badlo"],
@@ -252,6 +261,23 @@ class Sanice:
                 
         except Exception as e:
             self._log("load_err", e=str(e))
+
+    @classmethod
+    def de_sql(cls, url_conexao, query, lang="pt"):
+        try:
+            engine = create_engine(url_conexao)
+            df = pd.read_sql(query, engine)
+            instancia = cls(fonte_dados=df, lang=lang)
+            instancia._log("sql_read_ok", rows=len(df))
+            return instancia
+            
+        except Exception as e:
+            print(f"[ERRO SQL] {e}")
+            return None
+
+    from_sql = de_sql
+    从SQL = de_sql
+    sql_se = de_sql
 
     def _log(self, key, **kwargs):
         lang_dict = self.I18N.get(self.lang, self.I18N["en"])
@@ -367,7 +393,7 @@ class Sanice:
         except Exception as e:
             self._log("load_err", e=str(e))
 
-
+    
     def filtrar(self, query_string):
         try:
             antes = len(self.df)
@@ -428,27 +454,35 @@ class Sanice:
     def transformar(self, colunas, regra):
         if isinstance(colunas, str): colunas = [colunas]
         
+        r = regra.lower()
+
+        RULES_MONEY = ["dinheiro", "money", "currency", "金钱", "paisa", "mudra"]
+        RULES_NUM   = ["cpf", "cnpj", "numeros", "numbers", "telefone", "digits", "数字", "ank"]
+        RULES_EMAIL = ["email", "e-mail", "mail", "邮件"]
+        RULES_UPPER = ["upper", "maiusculo", "caps", "大写", "bada"]
+        RULES_LOWER = ["lower", "minusculo", "小写", "chota"]
+
         for col in colunas:
             if col not in self.df.columns:
                 continue
 
-            if regra == "dinheiro":
+            if r in RULES_MONEY:
                 self.df[col] = self.df[col].apply(self._tratar_dinheiro_br)
                 self._log("trans_money", col=col)
 
-            elif regra in ["cpf", "cnpj", "numeros", "numbers", "telefone"]:
+            elif r in RULES_NUM:
                 self.df[col] = self.df[col].astype(str).str.replace(r'\D', '', regex=True)
                 self._log("trans_num", col=col)
 
-            elif regra == "email":
+            elif r in RULES_EMAIL:
                 self.df[col] = self.df[col].astype(str).str.lower().str.strip()
                 mask = ~self.df[col].str.contains(r'[^@]+@[^@]+\.[^@]+', na=False)
                 self.df.loc[mask, col] = np.nan
                 self._log("trans_email", col=col)
 
-            elif regra == "upper":
+            elif r in RULES_UPPER:
                 self.df[col] = self.df[col].astype(str).str.upper()
-            elif regra == "lower":
+            elif r in RULES_LOWER:
                 self.df[col] = self.df[col].astype(str).str.lower()
             
             else:
@@ -485,6 +519,22 @@ class Sanice:
             print(pivot)
         except Exception as e:
             print(f"Erro na Pivot Table: {e}")
+        return self
+
+    def exportar_mongo(self, uri, database, collection):
+        try:
+            import pymongo
+            client = pymongo.MongoClient(uri)
+            db = client[database]
+            col = db[collection]
+            dados = self.df.to_dict(orient="records")
+            col.insert_many(dados)
+            self._log("mongo_ok", col=collection)
+            
+        except ImportError:
+            print("Erro: Instale o pymongo -> pip install pymongo")
+        except Exception as e:
+            self._log("save_err", e=str(e))
         return self
 
     def exportar_sql(self, url_conexao, nome_tabela, modo="append"):
@@ -534,7 +584,19 @@ class Sanice:
         self._log("scale_ok", method=metodo)
         return self
     
-    def auto_ml(self, alvo, tipo="classificacao", teste_tam=0.2, salvar_modelo=None):
+    def auto_ml(self, **kwargs):
+        alvo = kwargs.get('alvo') or kwargs.get('target') or kwargs.get('mubiao') or kwargs.get('lakshya')
+        raw_tipo = kwargs.get('tipo') or kwargs.get('type') or kwargs.get('leixing') or kwargs.get('prakar') or "classificacao"
+        teste_tam = kwargs.get('teste_tam') or kwargs.get('test_size') or 0.2
+        salvar_modelo = kwargs.get('salvar_modelo') or kwargs.get('save_path') or kwargs.get('baocun') or kwargs.get('save_kare')
+
+        if not alvo:
+            print("[ERRO/ERROR] Target/Alvo not defined.")
+            return self
+
+        tipo_lower = str(raw_tipo).lower()
+        eh_classificacao = any(x in tipo_lower for x in ['class', 'fenlei', '分类', 'varg'])
+        
         from sklearn.model_selection import train_test_split
         from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
         from sklearn.metrics import accuracy_score, r2_score
@@ -556,7 +618,7 @@ class Sanice:
             
             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=teste_tam, random_state=42)
             
-            if tipo == "classificacao":
+            if eh_classificacao:
                 modelo = RandomForestClassifier(n_estimators=100, random_state=42)
                 modelo.fit(X_train, y_train)
                 preds = modelo.predict(X_test)

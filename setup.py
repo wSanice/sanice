@@ -54,16 +54,17 @@ setup(
 
     extras_require={
         "api": ["fastapi>=0.95.0", "uvicorn>=0.22.0", "pydantic>=1.10.0"],
+        "db": ["pymongo", "psycopg2-binary"],
         "dev": ["pytest", "twine", "wheel"]
     },
     entry_points={
         "console_scripts": [
-            "sanice=sanice.core:cli", 
+            "sanice=sanice.core:cli",
         ],
-    },    
+    },
     project_urls={
         "Homepage": "https://github.com/wSanice/sanice",
         "Source": "https://github.com/wSanice/sanice",
-        "Funding": "https://github.com/sponsors/wSanice", 
+        "Funding": "https://github.com/sponsors/wSanice",
     },
 )

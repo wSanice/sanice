@@ -19,31 +19,36 @@
 
 ---
 <details>
-<summary><b>Version v1.0.7: Architecture Refactoring & Encapsulation</b></summary>
+<summary><b>v1.0.7: Database Integration, Smart Optimization & CLI</b></summary>
 <br>
+This massive update expands Sanice's capabilities into **Data Engineering** (SQL/NoSQL) while boosting **Performance** with smart memory management for large datasets.
 
-This version focuses on **Performance** and **Data Engineering**, solving memory consumption issues in large datasets (Big Data/High Cardinality) and simplifying date cleaning.
+### Database Integration (SQL & NoSQL)
+Sanice no longer lives only on CSVs. We added direct connectors for reading and writing to databases:
+* **SQL Reader (`Sanice.from_sql`):** A factory method to initialize a pipeline reading directly from a SQL query.
+    * Supports: PostgreSQL, MySQL, SQLite, Oracle, SQL Server (via SQLAlchemy).
+* **NoSQL Export (`.export_mongo`):** Native method to send processed data directly to **MongoDB** collections.
 
-### New Features (Smart Run)
-Added the `smart_run=True` parameter to the class constructor:
-* **Memory Optimization:** Automatically detects columns with high cardinality (repetitive data) and converts them to `category`, drastically reducing RAM usage.
-* **Auto-Date:** Scans the dataset for text columns that look like dates and converts them automatically.
+### Smart Optimization (Performance)
+Added the `smart_run=True` parameter to the class constructor to solve the "Forest Problem" (High Cardinality):
+* **Memory Optimization:** Automatically detects columns with repetitive data and converts them to `category`, drastically reducing RAM usage.
+* **Auto-Date:** Scans the dataset for messy text columns that look like dates and converts them automatically.
 
 ### CLI (Command Line)
-The terminal command has been improved:
+The terminal command has been completely overhauled:
 * **Version Check:** Now supports `sanice --version` or `sanice -v`.
 * **Language Intelligence:** The command automatically detects the desired language:
     * `sanice help` -> Opens in English.
     * `sanice ajuda` -> Opens in Portuguese.
     * `sanice bangzhu` -> Opens in Chinese.
 
-### Fixes
-* Fixed `setup.py` entry points to ensure the `sanice` executable is correctly created on Windows/Linux.
+### Installation & Fixes
+* **New Extras:** Use `pip install "sanice[db]"` to install database dependencies (pymongo, psycopg2).
+* **Fixes:** Fixed `setup.py` entry points to ensure the `sanice` executable is correctly created on Windows/Linux.
 
 ---
 **How to update:**
 `pip install sanice --upgrade`
-
 </details>
 
 <a name="-english"></a>
@@ -57,10 +62,9 @@ The terminal command has been improved:
 ```bash
 pip install sanice
 ```
-### Full Installation (includes API support):
-**Required if you plan to use** `.serve_api()`
+### Full Installation (Recommended): Includes API support (FastAPI) and Database drivers (Mongo/Postgres)
 ```bash
-pip install "sanice[api]"
+pip install "sanice[api,db]"
 ```
 ### CLI Helper
 You can verify installed commands directly from your terminal without opening Python:
@@ -162,8 +166,37 @@ Here is the complete list of available methods organized by category.
     .sort("revenue", ascending=False)
 )
 ```
+#### 3. Database Integration (SQL & NoSQL) v1.0.7+
+You can verify installation with `pip install "sanice[db]"` to enable these features.
 
-#### 3. Analytics & Visualization
+| Command | Description |
+| :--- | :--- |
+| `Sanice.from_sql(url, query)` | **Factory Method:** Initializes Sanice directly from a SQL query. |
+| `app.export_mongo(uri, db, col)`| Exports the current dataframe to a MongoDB collection. |
+| `app.export_sql(url, table)` | Exports to SQL databases (Postgres, MySQL, SQLite). |
+
+**Example: Reading from Postgres and Saving to MongoDB**
+```python
+from sanice import Sanice
+
+# 1. Read from SQL (PostgreSQL)
+app = Sanice.from_sql(
+    url_conexao="postgresql://user:pass@localhost/mydb",
+    query="SELECT * FROM raw_sales"
+)
+
+# 2. Clean & Export to NoSQL (MongoDB)
+(app
+    .drop_nulls()
+    .export_mongo(
+        uri="mongodb://localhost:27017",
+        database="analytics_db",
+        collection="clean_sales"
+    )
+)
+```
+
+#### 4. Analytics & Visualization
 | Command | Description |
 | :--- | :--- |
 | `app.describe()` | Displays mean, std, min, max, and percentiles. |
@@ -187,7 +220,7 @@ Here is the complete list of available methods organized by category.
 )
 ```
 
-#### 4. AI & Machine Learning
+#### 5. AI & Machine Learning
 | Command | Description |
 | :--- | :--- |
 | `app.scale(method)` | Normalizes data using `'minmax'` or `'standard'` scaler. |
@@ -215,7 +248,7 @@ Here is the complete list of available methods organized by category.
 )
 ```
 
-#### 5. Export & Deployment
+#### 6. Export & Deployment
 | Command | Description |
 | :--- | :--- |
 | `app.save(path)` | Exports data to `.csv`, `.xlsx`, or `.parquet`. |
@@ -247,26 +280,29 @@ This project is licensed under the Apache License, Version 2.0. See the [LICENSE
 ---
 
 <details>
-<summary><b>Atualização v1.0.7: Refatoração de Arquitetura & Encapsulamento</b></summary>
+<summary><b>v1.0.7: Integração com Bancos, Otimização Inteligente e CLI</b></summary>
 <br>
+Esta é uma grande atualização que expande as capacidades de **Engenharia de Dados** do Sanice (SQL/NoSQL) e foca em **Performance** para grandes volumes de dados.
 
-Esta versão foca em **Performance** e **Engenharia de Dados**, resolvendo problemas de consumo de memória em grandes datasets (Big Data/High Cardinality) e facilitando a limpeza de datas.
+### Integração com Banco de Dados (SQL & NoSQL)
+Agora o Sanice não vive apenas de CSV. Adicionamos métodos nativos para leitura e escrita:
+* **Leitura SQL (`Sanice.de_sql`):** Método de fábrica ("Factory method") para iniciar um pipeline lendo diretamente de uma query SQL.
+    * Suporta: PostgreSQL, MySQL, SQLite, Oracle, SQL Server (via SQLAlchemy).
+* **Exportação NoSQL (`.exportar_mongo`):** Método nativo para enviar dados tratados diretamente para coleções do **MongoDB**.
 
-### Novidades (Smart Features)
-Adicionamos o parâmetro `smart_run=True` no construtor da classe:
+### Otimização Inteligente (Performance)
+Adicionamos o parâmetro `smart_run=True` no construtor da classe para resolver gargalos de memória:
 * **Otimização de Memória:** Detecta automaticamente colunas com alta cardinalidade (muitos dados repetidos) e as converte para `category`, reduzindo drasticamente o uso de RAM.
 * **Auto-Date:** Varre o dataset em busca de colunas de texto que parecem datas e faz a conversão automática.
 
 ### CLI (Linha de Comando)
 O comando de terminal foi aprimorado:
 * **Versão:** Agora suporta `sanice --version` ou `sanice -v`.
-* **Inteligência de Idioma:** O comando detecta a língua desejada automaticamente:
-    * `sanice ajuda` -> Abre em Português.
-    * `sanice help` -> Abre em Inglês.
-    * `sanice bangzhu` -> Abre em Chinês.
+* **Inteligência de Idioma:** O comando detecta a língua desejada automaticamente (`sanice ajuda`, `sanice help`, `sanice bangzhu`).
 
-### Correções
-* Correção no `setup.py` para garantir a criação do executável `sanice` no Windows/Linux.
+### Instalação e Correções
+* **Novos Extras:** Use `pip install "sanice[db]"` para instalar as dependências de banco (`pymongo`, `psycopg2`).
+* **Correções:** Ajuste no `setup.py` para garantir a criação correta do executável `sanice` no Windows/Linux.
 
 ---
 **Como atualizar:**
@@ -285,10 +321,9 @@ O comando de terminal foi aprimorado:
 ```bash
 pip install sanice
 ```
-### Instalação Completa (inclui suporte a API): 
-**Necessário se você planeja usar** `.servir_api()`
+### Instalação Completa (Recomendada): Inclui suporte a API (FastAPI) e drivers de Banco de Dados (Mongo/Postgres)
 ```bash
-pip install "sanice[api]"
+pip install "sanice[api,db]"
 ```
 
 
@@ -396,7 +431,47 @@ Aqui está a lista completa de métodos disponíveis organizados por categoria.
 )
 ```
 
-#### 3. Análise e Visualização
+#### 3. Integração com Banco de Dados (SQL & NoSQL) v1.0.7+
+
+Instale com `pip install "sanice[db]"` para habilitar estas funções.
+
+
+| Comando | Descrição |
+
+| :--- | :--- |
+
+| `Sanice.de_sql(url, query)` | **Método Fábrica:** Inicia o Sanice direto de uma consulta SQL. |
+
+| `app.exportar_mongo(uri, db, col)`| Exporta o dataframe atual para uma coleção MongoDB. |
+
+| `app.exportar_sql(url, tabela)` | Exporta para bancos SQL (Postgres, MySQL, SQLite). |
+
+
+**Exemplo: Lendo do Postgres e Salvando no MongoDB**
+
+```python
+
+from sanice import Sanice
+
+# 1. Ler do SQL (PostgreSQL)
+app = Sanice.de_sql(
+    url_conexao="postgresql://user:senha@localhost/meubanco", 
+    query="SELECT * FROM vendas_brutas"
+)
+
+# 2. Limpar e Exportar para NoSQL (MongoDB)
+(app
+    .remover_nulos()
+    .exportar_mongo(
+        uri="mongodb://localhost:27017",
+        database="analytics_db",
+        collection="vendas_limpas"
+    )
+)
+
+```
+
+#### 4. Análise e Visualização
 | Comando | Descrição |
 | :--- | :--- |
 | `app.resumo_estatistico()` | Exibe média, desvio padrão, min, max e percentis. |
@@ -420,7 +495,7 @@ Aqui está a lista completa de métodos disponíveis organizados por categoria.
 )
 ```
 
-#### 4. IA e Machine Learning
+#### 5. IA e Machine Learning
 | Comando | Descrição |
 | :--- | :--- |
 | `app.escalonar(method)` | Normaliza dados usando escalonador `'minmax'` ou `'standard'`. |
@@ -448,7 +523,7 @@ Aqui está a lista completa de métodos disponíveis organizados por categoria.
 )
 ```
 
-#### 5. Exportação e Deploy
+#### 6. Exportação e Deploy
 | Comando | Descrição |
 | :--- | :--- |
 | `app.salvar(path)` | Exporta dados para `.csv`, `.xlsx` ou `.parquet`. |
@@ -508,6 +583,8 @@ Sanice is designed for global people. You can call methods in English, Portugues
 | `escalonar` | `scale_data` | `数据缩放` | `scale_kare` |
 | `servir_api` | `serve_api` | `启动API` | `api_chalu_kare` |
 | `transformar` | `transform` | `数据转换` | `badlav_kare` |
+| `Sanice.de_sql` | `Sanice.from_sql` | `Sanice.从SQL` | `Sanice.sql_se` |
+| `exportar_mongo` | `export_mongo` | `导出Mongo` | `mongo_bheje` |
 
 </details>
 
