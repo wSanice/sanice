@@ -502,10 +502,10 @@ class Sanice:
         r = regra.upper()
 
         RULES_MONEY = ["BRL", "USD", "CNY", "INR", "DINHEIRO", "MONEY", "CURRENCY", "金钱", "PAISA", "MUDRA"]
-        RULES_NUM   = ["cpf", "cnpj", "numeros", "numbers", "telefone", "digits", "数字", "ank"]
-        RULES_EMAIL = ["email", "e-mail", "mail", "邮件"]
-        RULES_UPPER = ["upper", "maiusculo", "caps", "大写", "bada"]
-        RULES_LOWER = ["lower", "minusculo", "小写", "chota"]
+        RULES_NUM   = ["CPF", "CNPJ", "NUMEROS", "NUMBERS", "TELEFONE", "DIGITS", "数字", "ANK"]
+        RULES_EMAIL = ["EMAIL", "E-MAIL", "MAIL", "邮件"]
+        RULES_UPPER = ["UPPER", "MAIUSCULO", "CAPS", "大写", "BADA"]
+        RULES_LOWER = ["LOWER", "MINUSCULO", "XIAOXIE", "CHOTA"]
         
         for col in colunas:
             if col not in self.df.columns:
