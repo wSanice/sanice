@@ -1,11 +1,11 @@
 import pytest
-import pandas as pd
-import numpy as np
 import os
 import sqlite3
 import gc
+import logging 
 from unittest.mock import MagicMock, patch
-from sanice import Sanice
+
+from sanice import Sanice, pd, np
 
 @pytest.fixture
 def dirty_df():
@@ -24,8 +24,16 @@ def ml_df():
     y = (2 * X + 1) + np.random.normal(0, 1, 100)
     return pd.DataFrame({"feature": X, "target": y})
 
+@pytest.fixture
+def international_df():
+    data = {
+        "Copaíbaçuã": ["fruta", "nativa", "do", "brasil"], 
+        "Price_USD": ["$1,500.50", "3,200.00", "$400.00", None],
+        "Price_CNY": ["¥1000", "¥2000", None, "¥500"]
+    }
+    return pd.DataFrame(data)
 def test_etl_pipeline(dirty_df):
-    app = Sanice(dirty_df, lang="en")
+    app = Sanice(dirty_df, lang="en", currency="BRL")
     
     (app
         .fix_columns() 
@@ -37,7 +45,36 @@ def test_etl_pipeline(dirty_df):
     
     df = app.pegar_dataframe()
     assert df["value"].dtype == "float64"
-    assert df.iloc[0]["value"] == 100.0
+    assert df.iloc[0]["value"] == 100.0 
+
+def test_international_currency_cleaning(international_df, caplog):
+    app_usd = Sanice(international_df, lang="en")
+    app_usd.fix_columns()
+    app_usd.transform("price_usd", "MONEY") 
+    df_usd = app_usd.pegar_dataframe()
+    assert df_usd["price_usd"].dtype == np.float64
+    assert df_usd["price_usd"].iloc[0] == 1500.50
+    assert df_usd.columns[0] == "copaibacua" 
+
+
+    app_cny = Sanice(international_df, lang="pt", currency="CNY")
+    app_cny.corrigir_colunas() 
+    app_cny.transformar("price_cny", "CNY")
+    df_cny = app_cny.pegar_dataframe()
+    assert df_cny["price_cny"].dtype == np.float64
+    assert df_cny["price_cny"].iloc[0] == 1000.0
+
+def test_log_verbosity_and_mute(dirty_df, caplog):
+    app = Sanice(dirty_df, lang="en")
+    app.configure_logs("silent")
+    app.fix_columns()
+    
+    assert "Column names standardized" not in caplog.text 
+
+    app.configure_logs("info")
+    app.transform("value", "money") 
+    
+    assert "[TRANSFORM]" in caplog.text
 
 def test_smart_run_features():    
     df = pd.DataFrame({
