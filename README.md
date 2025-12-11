@@ -21,50 +21,51 @@
 <details>
 <summary><b>v1.0.8: Database Integration, Smart Optimization & CLI</b></summary>
 <br>
+
 Version 1.0.8 focuses on optimizing the sanice for production environments, ensuring clean output, and preparing the architecture for Artificial Intelligence commands.
 
-#### 1.  Lei de Uso de Importação (Novo Padrão)
+#### 1. Import Usage Rule (New Standard)
 
-Para simplificar o setup, todas as dependências essenciais do Sanice são re-exportadas a partir de uma **única linha de importação**, eliminando a necessidade de importar Pandas, NumPy, etc., separadamente.
+To simplify the setup, all essential Sanice dependencies are re-exported from a **single import line**, eliminating the need to import Pandas, NumPy, etc., separately.
 
-| Ferramenta | Alias | Propósito |
+| Tool | Alias | Purpose |
 | :---: | :---: | :--- |
-| **Sanice** | `Sanice` | Classe principal do framework. |
-| **Pandas/NumPy** | `pd`, `np` | Manipulação e matemática de dados. |
-| **Visualização** | `plt`, `sns` | Gráficos (Matplotlib e Seaborn). |
-| **Serialização** | `joblib` | Salvar e carregar modelos de ML. |
-| **SQL** | `sqlalchemy` | Criação de engines de banco de dados. |
+| **Sanice** | `Sanice` | The framework's core class. |
+| **Pandas/NumPy** | `pd`, `np` | Data manipulation and mathematical arrays. |
+| **Visualization** | `plt`, `sns` | Plotting (Matplotlib and Seaborn). |
+| **Serialization** | `joblib` | Saving and loading ML models. |
+| **SQL** | `sqlalchemy` | Creating database engines. |
 
-**Linha de Importação Padrão:**
+**Standard Import Line:**
 
 ```python
 from sanice import Sanice, pd, np, plt, sns, joblib, sqlalchemy
 ```
-#### 2. Limpeza e Internacionalização (Core Engine)
+#### 2. Cleaning and Internationalization (Core Engine)
 
-O motor de limpeza foi expandido para suportar cenários globais e de produção.
+The cleaning engine has been expanded to support global and production scenarios.
 
-Padronização de Colunas: A função `corrigir_colunas()` agora inclui remoção automática de acentos e caracteres especiais, garantindo nomes de colunas compatíveis com bancos de dados e Python (ex: "Copáibaçuã" -> "copaibacua").
+Column Standardization: The `fix_columns()` function now includes automatic accent removal and special character cleaning, ensuring column names are database- and Python-compatible (e.g., "Copáibaçuã" -> "copaibacua").
 
-Controle de Moedas: O Sanice define a moeda padrão com base no idioma (pt -> BRL, en -> USD). O desenvolvedor pode sobrescrever a moeda padrão com o parâmetro currency no construtor.
+Currency Control: Sanice sets the default currency based on the language (`pt` -> BRL, `en` -> USD). The developer can override the default currency with the optional `currency` parameter in the constructor.
 
-#### 3. Controle de Produção e Logs (Novo Mute)
+#### 3. Production Control and Logging
 
-Verbosity Control: Adicionado o método `app.configurar_logs(nivel="silent")` para silenciar todas as mensagens informativas (`[CARREGAR]`, `[SMART]`, etc.) no console.
+* **Log Control (Verbosity Control):** The method `app.configure_logs(level="silent")` was added to silence all informative messages (e.g., `[LOAD]`, `[SMART]`, etc.) in the console.
+    * **Impact:** Essential for use in backends (Node.js/APIs) where the output must be clean JSON, preventing `JSON.parse` errors.
+* **Multi-Currency Support:** The `transform` method now supports currency formats for **BRL, USD, CNY, and INR**, based on the default `lang` setting of the Sanice object.
+* **Import Usage Rule:** Implemented dependency re-exportation (`from sanice import pd, np, plt, sns`), simplifying the developer's setup to a single line.
+* **Column Cleaning (Accent Removal):** The `fix_columns()` method was enhanced to automatically remove accents (`á`, `ç`, `ã`) and special characters.
 
-Impacto: Essencial para uso em backends (Node.js/APIs) onde a saída precisa ser um JSON limpo, prevenindo erros de `JSON.parse`.
+#### Log Configuration Detail
 
-Ajuste na manipulação de NaN (Not a Number) em descritivos estatísticos para evitar erros de tipagem em integrações externas (JSON/API).
-
-O método `configurar_logs()` permite controlar a verbosidade das mensagens de log geradas pelo framework, otimizando a saída para o seu sistema.
-
-| Nível | Comando | Descrição | Constante de Log (Valor) |
-| :--- | :--- | :--- |:--- |
-|**Silent** | `"silent"` | Silencia **TUDO**. Ideal para produção, garantindo que o `stdout` seja JSON puro. | `logging.CRITICAL + 1` (Maior que 50)|
-|**Error** | `"error"` | Mostra apenas mensagens de **erro grave**. | `logging.ERROR` (40)|
-|**Warn** | `"warn"` |Mostra mensagens de **alerta/cuidado** e erros. |`logging.WARNING` (30)|
-|**Info** | `"info"` | (Padrão) Mostra todas as mensagens **operacionais** (incluindo INFO e WARN). | `logging.INFO` (20)|
-|**Debug** |	`"debug"`	| Mostra mensagens **detalhadas** para depuração e tudo superior. |	`logging.DEBUG` (10)|
+| Level | Command | Description | Log Constant (Value) |
+| :---: | :---: | :--- | :--- |
+|**Silent** | `"silent"` | Silences **EVERYTHING**. Ideal for production, ensuring `stdout` is pure JSON. | `logging.CRITICAL + 1` (Greater than 50)|
+|**Error** | `"error"` | Shows only **severe errors**. | `logging.ERROR` (40)|
+|**Warn** | `"warn"` | Shows warnings and errors. | `logging.WARNING` (30)|
+|**Info** | `"info"` | (Default) Shows all operational messages. | `logging.INFO` (20)|
+|**Debug** | `"debug"` | Shows **detailed** execution messages and all higher levels. | `logging.DEBUG` (10)|
 
 ---
 **How to update:**
@@ -188,36 +189,47 @@ from sanice import Sanice
 )
 ```
 
-### Snippets & Command Reference
+#### Snippets & Command Reference
 
 Here is the complete list of available methods organized by category.
 
-#### 1. Cleaning & ETL
+### 1. Cleaning and ETL (Internationalization Engine)
+
+Sanice's cleaning engine has been expanded to support global and production scenarios, consolidating complex tasks into simple commands.
+
 | Command | Description |
 | :--- | :--- |
-| `app.fix_columns()` | Converts all column names to `snake_case`. |
-| `app.transform(col, rule)` | Applies logic: `'money'`, `'digits'`, `'email'`, `'upper'`, `'lower'`. |
-| `app.drop_nulls(strategy, val)` | Strategy: `'drop'` or `'fill'`. |
-| `app.clean_text([cols])` | Strips spaces and converts text to Title Case. |
+| `app.fix_columns()` | Converts column names to `snake_case`, including **automatic accent removal** (`á`, `ç`) and special characters (e.g., "Copáibaçuã" -> "copaibacua"). |
+| `app.transform(col, rule)` | Applies **international currency cleaning** and text standardization logic: `'MONEY'`, `'NUMBERS'`, `'EMAIL'`, `'UPPER'`, `'LOWER'`, etc. |
+| `app.remove_nulls(strategy, val)` | Strategy: `'drop'` or `'fill'` (default `0` if not specified). |
+| `app.clean_text([cols])` | Removes extra spaces and converts text to Title Case. |
 | `app.convert_date(col, fmt)` | Converts a string column to datetime objects. |
 
-> **Use Cases:**
-> * Standardization of data extracted from legacy systems or unformatted Excel sheets.
-> * Rapid conversion of currency strings to float before calculations.
-> * Preparation of web form data where users input dates in various formats.
+>  **New Use Cases and Control:**
+> * **Column Standardization:** Accent removal eliminates errors in SQL queries and code references.
+> * **Currency Control:** Sanice sets the default currency based on the instance's language (e.g., `lang="en"` assumes **USD**; `lang="pt"` assumes **BRL**).
+> * **Global Monetary Conversion:** Fast conversion of international currency columns (R$, $, ¥) to float before calculations.
 
-**Application Example:**
+**Application Example (Internationalization Pipeline):**
+
 ```python
-# Cleaning a messy HR dataset
-(Sanice("raw_employees.csv")
-    .fix_columns()                    # "Emp Name" -> "emp_name"
-    .clean_text(["emp_name", "dept"])
-    .transform("salary", "money")     # "$ 2,500.00" -> 2500.0
-    .convert_date("hire_date")        # String -> Datetime
+# Setup: Instantiating Sanice in English (assuming default currency USD)
+app = Sanice("global_sales.csv", lang="en")
+
+# Cleaning and Column Standardization (including accents)
+(app.fix_columns()                      # Ex: "Venda Mês Jan" -> "venda_mes_jan"
+    .clean_text(["client_name"])         # Alias for limpar_texto
+    .transform("unit_price", "MONEY")    # Assumes USD (Default 'en')
+    .transform("shipping_date", "DATE") # Alias for converter_data (Date rule exists in transform)
 )
+
+# Currency Override Usage (Override)
+# If you want to clean a Chinese Yuan (CNY) column in a PT app:
+app_pt = Sanice("data.csv", lang="pt", currency="CNY")
+app_pt.transform("import_value", "MONEY")
 ```
 
-#### 2. Data Manipulation
+### 2. Data Manipulation
 | Command | Description |
 | :--- | :--- |
 | `app.create_column(name, logic)` | Creates a column using a string expression or lambda. |
@@ -246,7 +258,7 @@ Here is the complete list of available methods organized by category.
     .sort("revenue", ascending=False)
 )
 ```
-#### 3. Database Integration (SQL & NoSQL) v1.0.8+
+### 3. Database Integration (SQL & NoSQL) v1.0.8+
 You can verify installation with `pip install "sanice[db]"` to enable these features.
 
 | Command | Description |
@@ -276,7 +288,7 @@ app = Sanice.from_sql(
 )
 ```
 
-#### 4. Analytics & Visualization
+### 4. Analytics & Visualization
 | Command | Description |
 | :--- | :--- |
 | `app.describe()` | Displays mean, std, min, max, and percentiles. |
@@ -300,7 +312,7 @@ app = Sanice.from_sql(
 )
 ```
 
-#### 5. AI & Machine Learning
+### 5. AI & Machine Learning
 | Command | Description |
 | :--- | :--- |
 | `app.scale(method)` | Normalizes data using `'minmax'` or `'standard'` scaler. |
@@ -328,7 +340,7 @@ app = Sanice.from_sql(
 )
 ```
 
-#### 6. Export & Deployment
+### 6. Export & Deployment
 | Command | Description |
 | :--- | :--- |
 | `app.save(path)` | Exports data to `.csv`, `.xlsx`, or `.parquet`. |
@@ -351,7 +363,7 @@ app = Sanice.from_sql(
 )
 ```
 
-### License
+#### License
 
 This project is licensed under the Apache License, Version 2.0. See the [LICENSE](https://www.apache.org/licenses/LICENSE-2.0)  for details.
 
@@ -382,7 +394,7 @@ Para simplificar o setup, todas as dependências essenciais do Sanice são re-ex
 ```python
 from sanice import Sanice, pd, np, plt, sns, joblib, sqlalchemy
 ```
-#### 2. Limpeza e Internacionalização (Core Engine)
+### Limpeza e Internacionalização (Core Engine)
 
 O motor de limpeza foi expandido para suportar cenários globais e de produção.
 
@@ -390,7 +402,7 @@ Padronização de Colunas: A função `corrigir_colunas()` agora inclui remoçã
 
 Controle de Moedas: O Sanice define a moeda padrão com base no idioma (pt -> BRL, en -> USD). O desenvolvedor pode sobrescrever a moeda padrão com o parâmetro currency no construtor.
 
-#### 3. Controle de Produção e Logs (Novo Mute)
+### Controle de Produção e Logs
 
 Verbosity Control: Adicionado o método `app.configurar_logs(nivel="silent")` para silenciar todas as mensagens informativas (`[CARREGAR]`, `[SMART]`, etc.) no console.
 
@@ -556,7 +568,7 @@ from sanice import Sanice
 
 Aqui está a lista completa de métodos disponíveis organizados por categoria.
 
-### Limpeza e ETL (Engine de Internacionalização)
+### 1. Limpeza e ETL (Engine de Internacionalização)
 
 O motor de limpeza do Sanice foi expandido para suportar cenários globais e de produção, consolidando tarefas complexas em comandos simples.
 
@@ -592,7 +604,7 @@ app_pt = Sanice("dados.csv", lang="pt", currency="CNY")
 app_pt.transformar("valor_importacao", "MONEY")
 ```
 
-#### 2. Manipulação de Dados
+### 2. Manipulação de Dados
 | Comando | Descrição |
 | :--- | :--- |
 | `app.criar_coluna(name, logic)` | Cria uma coluna usando expressão string ou lambda. |
@@ -622,21 +634,16 @@ app_pt.transformar("valor_importacao", "MONEY")
 )
 ```
 
-#### 3. Integração com Banco de Dados (SQL & NoSQL) v1.0.8+
+### 3. Integração com Banco de Dados (SQL & NoSQL) v1.0.8+
 
 Instale com `pip install "sanice[db]"` para habilitar estas funções.
 
 
 | Comando | Descrição |
-
 | :--- | :--- |
-
 | `Sanice.de_sql(url, query)` | **Método Fábrica:** Inicia o Sanice direto de uma consulta SQL. |
-
 | `app.exportar_mongo(uri, db, col)`| Exporta o dataframe atual para uma coleção MongoDB. |
-
 | `app.exportar_sql(url, tabela)` | Exporta para bancos SQL (Postgres, MySQL, SQLite). |
-
 
 **Exemplo: Lendo do Postgres e Salvando no MongoDB**
 
@@ -662,7 +669,7 @@ app = Sanice.de_sql(
 
 ```
 
-#### 4. Análise e Visualização
+### 4. Análise e Visualização
 | Comando | Descrição |
 | :--- | :--- |
 | `app.resumo_estatistico()` | Exibe média, desvio padrão, min, max e percentis. |
@@ -686,7 +693,7 @@ app = Sanice.de_sql(
 )
 ```
 
-#### 5. IA e Machine Learning
+### 5. IA e Machine Learning
 | Comando | Descrição |
 | :--- | :--- |
 | `app.escalonar(method)` | Normaliza dados usando escalonador `'minmax'` ou `'standard'`. |
@@ -714,7 +721,7 @@ app = Sanice.de_sql(
 )
 ```
 
-#### 6. Exportação e Deploy
+### 6. Exportação e Deploy
 | Comando | Descrição |
 | :--- | :--- |
 | `app.salvar(path)` | Exporta dados para `.csv`, `.xlsx` ou `.parquet`. |
@@ -780,7 +787,7 @@ Sanice is designed for global people. You can call methods in English, Portugues
 
 </details>
 
-### Licença
+#### Licença
 
 Este projeto está licenciado sob a Apache License, Version 2.0. Consulte a [LICENSE](https://www.apache.org/licenses/LICENSE-2.0)  para obter detalhes.
 
@@ -796,6 +803,3 @@ Este projeto está licenciado sob a Apache License, Version 2.0. Consulte a [LIC
 
 ---
 Desenvolvido por **wSanice**.
-
-
-from sanice import Sanice, pd, np, plt, sns, joblib, sqlalchemy
