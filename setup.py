@@ -49,7 +49,8 @@ setup(
         "joblib>=1.2.0",
         "openpyxl>=3.1.0",
         "pyarrow>=11.0.0",
-        "sqlalchemy>=2.0.0"
+        "sqlalchemy>=2.0.0",
+        "unidecode>=1.3.0"
     ],
 
     extras_require={
