@@ -12,14 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import re
+import unidecode
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 import joblib
+import logging
+
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sqlalchemy import create_engine
 
+logger = logging.getLogger('Sanice')
+logger.setLevel(logging.INFO)
+
+if not logger.handlers:
+    ch = logging.StreamHandler()
+    formatter = logging.Formatter('%(message)s')
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
 
 class Sanice:
     """
@@ -233,13 +245,32 @@ class Sanice:
         "tratar_outliers":   ["handle_outliers",   "处理异常值", "outliers_hataye"],
         "escalonar":         ["scale_data",        "数据缩放",   "scale_kare"],
         "servir_api":        ["serve_api",         "启动API",    "api_chalu_kare"],
-        "transformar":       ["transform",         "数据转换",   "badlav_kare"]
+        "transformar":       ["transform",         "数据转换",   "badlav_kare"],
+        "configurar_logs": ["configure_logs", "配置日志", "log_set_kare"]
+    }
+    
+    VERBOSITY_MAP = {
+        "silent": logging.CRITICAL + 1,
+        "error": logging.ERROR,
+        "warn": logging.WARNING,
+        "info": logging.INFO,
+        "debug": logging.DEBUG
     }
 
-    def __init__(self, fonte_dados, lang="pt", smart_run=False):
+    CURRENCY_MAP = {
+        "pt": "BRL",
+        "en": "USD",
+        "zh": "CNY",
+        "hi": "INR",
+    }
+
+    def __init__(self, fonte_dados, lang="pt", smart_run=False, currency=None):
         self.lang = lang
         self.df = None
         self.scaler = None
+        moeda_padrao = self.CURRENCY_MAP.get(self.lang, "USD")
+        self.currency = currency.upper() if currency else moeda_padrao
+        
         self._setup_aliases()
 
         try:
@@ -250,7 +281,7 @@ class Sanice:
                 elif fonte_dados.endswith(('.xls', '.xlsx')): self.df = pd.read_excel(fonte_dados)
                 elif fonte_dados.endswith('.parquet'): self.df = pd.read_parquet(fonte_dados)
                 elif fonte_dados.endswith('.json'): self.df = pd.read_json(fonte_dados)
-            
+                        
             if self.df is not None:
                 self._log("load_ok", rows=self.df.shape[0], cols=self.df.shape[1])
                 if smart_run:
@@ -279,11 +310,25 @@ class Sanice:
     从SQL = de_sql
     sql_se = de_sql
 
+    def configurar_logs(self, nivel="info"):
+        """
+        Configura o nível de verbosidade do Sanice.
+        Níveis disponíveis: 'silent', 'error', 'warn', 'info', 'debug'.
+        """
+        nivel_log = self.VERBOSITY_MAP.get(nivel.lower(), logging.INFO)
+        logger.setLevel(nivel_log)
+        
+        if nivel.lower() != 'silent':
+            print(f"[LOG] Sanice configurado para nível: {nivel.upper()}")
+        
+        return self
+    
     def _log(self, key, **kwargs):
         lang_dict = self.I18N.get(self.lang, self.I18N["en"])
         msg = lang_dict.get(key, self.I18N["en"].get(key, ""))
+        
         if msg:
-            print(msg.format(**kwargs))
+            logger.info(msg.format(**kwargs))
 
     def _setup_aliases(self):
         if self.lang == "pt": return
@@ -330,12 +375,10 @@ class Sanice:
     def ajuda(self):
         self._log("help_title", lang=self.lang)
         if self.lang == "pt":
-            # MUDANÇA: self.METHOD_ALIASES
             cmds = [m for m in self.METHOD_ALIASES.keys()]
         else:
             idx_map = {"en": 0, "zh": 1, "hi": 2}
             idx = idx_map.get(self.lang, 0)
-            # MUDANÇA: self.METHOD_ALIASES
             cmds = [aliases[idx] for aliases in self.METHOD_ALIASES.values()]
         print(", ".join([f".{c}()" for c in cmds]))
         return self
@@ -350,7 +393,9 @@ class Sanice:
     def corrigir_colunas(self):
         if self.df is not None:
             old_cols = self.df.columns
-            new_cols = [c.strip().lower().replace(" ", "_").replace("/", "_").replace("-", "_") for c in old_cols]
+            new_cols = [unidecode.unidecode(c).strip().lower() for c in old_cols] 
+            new_cols = [c.replace(" ", "_").replace("/", "_").replace("-", "_") for c in new_cols] 
+            new_cols = [re.sub(r'[^a-z0-9_]+', '', c) for c in new_cols]
             self.df.rename(columns={o: n for o, n in zip(old_cols, new_cols)}, inplace=True)
             self._log("clean_cols")
         return self
@@ -454,20 +499,21 @@ class Sanice:
     def transformar(self, colunas, regra):
         if isinstance(colunas, str): colunas = [colunas]
         
-        r = regra.lower()
+        r = regra.upper()
 
-        RULES_MONEY = ["dinheiro", "money", "currency", "金钱", "paisa", "mudra"]
+        RULES_MONEY = ["BRL", "USD", "CNY", "INR", "DINHEIRO", "MONEY", "CURRENCY", "金钱", "PAISA", "MUDRA"]
         RULES_NUM   = ["cpf", "cnpj", "numeros", "numbers", "telefone", "digits", "数字", "ank"]
         RULES_EMAIL = ["email", "e-mail", "mail", "邮件"]
         RULES_UPPER = ["upper", "maiusculo", "caps", "大写", "bada"]
         RULES_LOWER = ["lower", "minusculo", "小写", "chota"]
-
+        
         for col in colunas:
             if col not in self.df.columns:
                 continue
 
             if r in RULES_MONEY:
-                self.df[col] = self.df[col].apply(self._tratar_dinheiro_br)
+                moeda_a_usar = r if r in self.CURRENCY_MAP.values() else self.currency
+                self.df[col] = self.df[col].apply(lambda x: self._tratar_moeda(x, moeda_a_usar))
                 self._log("trans_money", col=col)
 
             elif r in RULES_NUM:
@@ -490,11 +536,21 @@ class Sanice:
         
         return self
 
-    def _tratar_dinheiro_br(self, valor):
-        if pd.isna(valor): return np.nan
-        s = str(valor)
-        s = s.replace('R$', '').replace(' ', '').replace('.', '')
-        s = s.replace(',', '.')
+    def _tratar_moeda(self, valor, codigo_moeda):
+        if pd.isna(valor): 
+            return np.nan
+        
+        s = str(valor).strip()
+        
+        if codigo_moeda == "BRL":
+            s = s.replace('R$', '').replace(' ', '').replace('.', '')
+            s = s.replace(',', '.')
+        elif codigo_moeda == "USD":
+            s = s.replace('$', '').replace(' ', '').replace(',', '')
+        elif codigo_moeda == "CNY":
+            s = s.replace('¥', '').replace(' ', '').replace(',', '')
+        elif codigo_moeda == "INR":
+            s = s.replace('₹', '').replace(' ', '').replace(',', '')
         try:
             return float(s)
         except:

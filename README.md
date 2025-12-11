@@ -19,32 +19,52 @@
 
 ---
 <details>
-<summary><b>v1.0.7: Database Integration, Smart Optimization & CLI</b></summary>
+<summary><b>v1.0.8: Database Integration, Smart Optimization & CLI</b></summary>
 <br>
-This massive update expands Sanice's capabilities into **Data Engineering** (SQL/NoSQL) while boosting **Performance** with smart memory management for large datasets.
+Version 1.0.8 focuses on optimizing the sanice for production environments, ensuring clean output, and preparing the architecture for Artificial Intelligence commands.
 
-### Database Integration (SQL & NoSQL)
-Sanice no longer lives only on CSVs. We added direct connectors for reading and writing to databases:
-* **SQL Reader (`Sanice.from_sql`):** A factory method to initialize a pipeline reading directly from a SQL query.
-    * Supports: PostgreSQL, MySQL, SQLite, Oracle, SQL Server (via SQLAlchemy).
-* **NoSQL Export (`.export_mongo`):** Native method to send processed data directly to **MongoDB** collections.
+#### 1.  Lei de Uso de Importação (Novo Padrão)
 
-### Smart Optimization (Performance)
-Added the `smart_run=True` parameter to the class constructor to solve the "Forest Problem" (High Cardinality):
-* **Memory Optimization:** Automatically detects columns with repetitive data and converts them to `category`, drastically reducing RAM usage.
-* **Auto-Date:** Scans the dataset for messy text columns that look like dates and converts them automatically.
+Para simplificar o setup, todas as dependências essenciais do Sanice são re-exportadas a partir de uma **única linha de importação**, eliminando a necessidade de importar Pandas, NumPy, etc., separadamente.
 
-### CLI (Command Line)
-The terminal command has been completely overhauled:
-* **Version Check:** Now supports `sanice --version` or `sanice -v`.
-* **Language Intelligence:** The command automatically detects the desired language:
-    * `sanice help` -> Opens in English.
-    * `sanice ajuda` -> Opens in Portuguese.
-    * `sanice bangzhu` -> Opens in Chinese.
+| Ferramenta | Alias | Propósito |
+| :---: | :---: | :--- |
+| **Sanice** | `Sanice` | Classe principal do framework. |
+| **Pandas/NumPy** | `pd`, `np` | Manipulação e matemática de dados. |
+| **Visualização** | `plt`, `sns` | Gráficos (Matplotlib e Seaborn). |
+| **Serialização** | `joblib` | Salvar e carregar modelos de ML. |
+| **SQL** | `sqlalchemy` | Criação de engines de banco de dados. |
 
-### Installation & Fixes
-* **New Extras:** Use `pip install "sanice[db]"` to install database dependencies (pymongo, psycopg2).
-* **Fixes:** Fixed `setup.py` entry points to ensure the `sanice` executable is correctly created on Windows/Linux.
+**Linha de Importação Padrão:**
+
+```python
+from sanice import Sanice, pd, np, plt, sns, joblib, sqlalchemy
+```
+#### 2. Limpeza e Internacionalização (Core Engine)
+
+O motor de limpeza foi expandido para suportar cenários globais e de produção.
+
+Padronização de Colunas: A função `corrigir_colunas()` agora inclui remoção automática de acentos e caracteres especiais, garantindo nomes de colunas compatíveis com bancos de dados e Python (ex: "Copáibaçuã" -> "copaibacua").
+
+Controle de Moedas: O Sanice define a moeda padrão com base no idioma (pt -> BRL, en -> USD). O desenvolvedor pode sobrescrever a moeda padrão com o parâmetro currency no construtor.
+
+#### 3. Controle de Produção e Logs (Novo Mute)
+
+Verbosity Control: Adicionado o método `app.configurar_logs(nivel="silent")` para silenciar todas as mensagens informativas (`[CARREGAR]`, `[SMART]`, etc.) no console.
+
+Impacto: Essencial para uso em backends (Node.js/APIs) onde a saída precisa ser um JSON limpo, prevenindo erros de `JSON.parse`.
+
+Ajuste na manipulação de NaN (Not a Number) em descritivos estatísticos para evitar erros de tipagem em integrações externas (JSON/API).
+
+O método `configurar_logs()` permite controlar a verbosidade das mensagens de log geradas pelo framework, otimizando a saída para o seu sistema.
+
+| Nível | Comando | Descrição | Constante de Log (Valor) |
+| :--- | :--- | :--- |:--- |
+|**Silent** | `"silent"` | Silencia **TUDO**. Ideal para produção, garantindo que o `stdout` seja JSON puro. | `logging.CRITICAL + 1` (Maior que 50)|
+|**Error** | `"error"` | Mostra apenas mensagens de **erro grave**. | `logging.ERROR` (40)|
+|**Warn** | `"warn"` |Mostra mensagens de **alerta/cuidado** e erros. |`logging.WARNING` (30)|
+|**Info** | `"info"` | (Padrão) Mostra todas as mensagens **operacionais** (incluindo INFO e WARN). | `logging.INFO` (20)|
+|**Debug** |	`"debug"`	| Mostra mensagens **detalhadas** para depuração e tudo superior. |	`logging.DEBUG` (10)|
 
 ---
 **How to update:**
@@ -75,7 +95,7 @@ sanice bangzhu # 🇨🇳 Chinese
 sanice madad   # 🇮🇳 Hindi
 ```
 
-### Smart Optimization (v1.0.7+)
+### Smart Optimization (v1.0.8+)
 
 Enable `smart_run` to automatically detect dates and compress memory usage by converting repetitive text to categories.
 
@@ -84,6 +104,66 @@ from sanice import Sanice
 
 # Activates Auto-Date & Memory Optimization
 app = Sanice("large_dataset.csv", smart_run=True)
+```
+
+## Log Configuration Levels
+
+The `configurar_logs()` method allows controlling the verbosity of log messages generated by the framework, optimizing the output for your system.
+
+| Level | Command | Description | Log Constant (Value) |
+| :--- | :--- | :--- | :--- |
+|**Silent** | `"silent"` | Silences **EVERYTHING**. Ideal for production, ensuring `stdout` is pure JSON. | `logging.CRITICAL + 1` (Greater than 50)|
+|**Error** | `"error"` | Shows only **severe error** messages. | `logging.ERROR` (40)|
+|**Warn** | `"warn"` | Shows **warning/caution** messages and errors. | `logging.WARNING` (30)|
+|**Info** | `"info"` | (Default) Shows all **operational** messages (including INFO and WARN). | `logging.INFO` (20)|
+|**Debug** | `"debug"` | Shows **detailed** messages for debugging and all higher levels. | `logging.DEBUG` (10)|
+
+---
+
+### Note
+
+The **Silent** level is particularly useful because it silences all informational messages (INFO, WARN) that might clutter the console, leaving it clean, especially if the expected output is only structured data.
+
+```python
+import logging
+from sanice import Sanice
+
+# SCENARIO: PRODUCTION DATA PIPELINE
+# Goal: Load data from SQL, clean it, train a simple model, and export the CLEANED
+# data to MongoDB. The console must show NO Sanice messages, only the final output.
+
+# 1. Initialize Sanice and set the logging level to SILENT.
+# This ensures that all framework messages (INFO, WARN) are suppressed.
+app = Sanice.from_sql(
+    url_connection="postgresql://prod_user:***@db-server/analytics_db",
+    query="SELECT * FROM raw_transactions WHERE created_at >= '2025-01-01'"
+)
+app.configurar_logs("silent") # Crucial line for muting framework output
+
+# 2. Execute a complex data pipeline.
+# No intermediate messages will be printed to the console during these steps.
+(app
+    .fix_columns()
+    .transform("transaction_amount", "money")
+    .handle_outliers(["transaction_amount"])
+    .auto_ml(
+        target="is_fraud",
+        type="classification",
+        save_path="fraud_model_v1.pkl"
+    )
+    # The .export_mongo() method is assumed to handle the clean data export.
+    .export_mongo(
+        uri="mongodb://localhost:27017",
+        database="analytics_db",
+        collection="clean_transactions"
+    )
+)
+
+# If the pipeline runs successfully in silent mode, the console output will be clean,
+# meaning the framework will not print "Starting AutoML..." or "Data exported successfully...".
+
+# If we needed to confirm the execution with an explicit, controlled message:
+print("INFO: Data pipeline finished and cleaned transactions were exported to MongoDB.")
 ```
 
 ### ⚡ Quick Start
@@ -166,7 +246,7 @@ Here is the complete list of available methods organized by category.
     .sort("revenue", ascending=False)
 )
 ```
-#### 3. Database Integration (SQL & NoSQL) v1.0.7+
+#### 3. Database Integration (SQL & NoSQL) v1.0.8+
 You can verify installation with `pip install "sanice[db]"` to enable these features.
 
 | Command | Description |
@@ -280,32 +360,56 @@ This project is licensed under the Apache License, Version 2.0. See the [LICENSE
 ---
 
 <details>
-<summary><b>v1.0.7: Integração com Bancos, Otimização Inteligente e CLI</b></summary>
+<summary><b>v1.0.8: Integração com Bancos, Otimização Inteligente e CLI</b></summary>
 <br>
-Esta é uma grande atualização que expande as capacidades de **Engenharia de Dados** do Sanice (SQL/NoSQL) e foca em **Performance** para grandes volumes de dados.
 
-### Integração com Banco de Dados (SQL & NoSQL)
-Agora o Sanice não vive apenas de CSV. Adicionamos métodos nativos para leitura e escrita:
-* **Leitura SQL (`Sanice.de_sql`):** Método de fábrica ("Factory method") para iniciar um pipeline lendo diretamente de uma query SQL.
-    * Suporta: PostgreSQL, MySQL, SQLite, Oracle, SQL Server (via SQLAlchemy).
-* **Exportação NoSQL (`.exportar_mongo`):** Método nativo para enviar dados tratados diretamente para coleções do **MongoDB**.
+A versão 1.0.8 foca em otimizar o sanice para ambientes de produção, garantindo saída limpa e preparando a arquitetura para comandos de Inteligência Artificial.
 
-### Otimização Inteligente (Performance)
-Adicionamos o parâmetro `smart_run=True` no construtor da classe para resolver gargalos de memória:
-* **Otimização de Memória:** Detecta automaticamente colunas com alta cardinalidade (muitos dados repetidos) e as converte para `category`, reduzindo drasticamente o uso de RAM.
-* **Auto-Date:** Varre o dataset em busca de colunas de texto que parecem datas e faz a conversão automática.
+#### Novas Funcionalidades e Melhorias
 
-### CLI (Linha de Comando)
-O comando de terminal foi aprimorado:
-* **Versão:** Agora suporta `sanice --version` ou `sanice -v`.
-* **Inteligência de Idioma:** O comando detecta a língua desejada automaticamente (`sanice ajuda`, `sanice help`, `sanice bangzhu`).
+Para simplificar o setup, todas as dependências essenciais do Sanice são re-exportadas a partir de uma **única linha de importação**, eliminando a necessidade de importar Pandas, NumPy, etc., separadamente.
 
-### Instalação e Correções
-* **Novos Extras:** Use `pip install "sanice[db]"` para instalar as dependências de banco (`pymongo`, `psycopg2`).
-* **Correções:** Ajuste no `setup.py` para garantir a criação correta do executável `sanice` no Windows/Linux.
+| Ferramenta | Alias | Propósito |
+| :---: | :---: | :--- |
+| **Sanice** | `Sanice` | Classe principal do framework. |
+| **Pandas/NumPy** | `pd`, `np` | Manipulação e matemática de dados. |
+| **Visualização** | `plt`, `sns` | Gráficos (Matplotlib e Seaborn). |
+| **Serialização** | `joblib` | Salvar e carregar modelos de ML. |
+| **SQL** | `sqlalchemy` | Criação de engines de banco de dados. |
+
+**Linha de Importação Padrão:**
+
+```python
+from sanice import Sanice, pd, np, plt, sns, joblib, sqlalchemy
+```
+#### 2. Limpeza e Internacionalização (Core Engine)
+
+O motor de limpeza foi expandido para suportar cenários globais e de produção.
+
+Padronização de Colunas: A função `corrigir_colunas()` agora inclui remoção automática de acentos e caracteres especiais, garantindo nomes de colunas compatíveis com bancos de dados e Python (ex: "Copáibaçuã" -> "copaibacua").
+
+Controle de Moedas: O Sanice define a moeda padrão com base no idioma (pt -> BRL, en -> USD). O desenvolvedor pode sobrescrever a moeda padrão com o parâmetro currency no construtor.
+
+#### 3. Controle de Produção e Logs (Novo Mute)
+
+Verbosity Control: Adicionado o método `app.configurar_logs(nivel="silent")` para silenciar todas as mensagens informativas (`[CARREGAR]`, `[SMART]`, etc.) no console.
+
+Impacto: Essencial para uso em backends (Node.js/APIs) onde a saída precisa ser um JSON limpo, prevenindo erros de `JSON.parse`.
+
+Ajuste na manipulação de NaN (Not a Number) em descritivos estatísticos para evitar erros de tipagem em integrações externas (JSON/API).
+
+O método `configurar_logs()` permite controlar a verbosidade das mensagens de log geradas pelo framework, otimizando a saída para o seu sistema.
+
+| Nível | Comando | Descrição | Constante de Log (Valor) |
+| :--- | :--- | :--- |:--- |
+|**Silent** | `"silent"` | Silencia **TUDO**. Ideal para produção, garantindo que o `stdout` seja JSON puro. | `logging.CRITICAL + 1` (Maior que 50)|
+|**Error** | `"error"` | Mostra apenas mensagens de **erro grave**. | `logging.ERROR` (40)|
+|**Warn** | `"warn"` |Mostra mensagens de **alerta/cuidado** e erros. |`logging.WARNING` (30)|
+|**Info** | `"info"` | (Padrão) Mostra todas as mensagens **operacionais** (incluindo INFO e WARN). | `logging.INFO` (20)|
+|**Debug** |	`"debug"`	| Mostra mensagens **detalhadas** para depuração e tudo superior. |	`logging.DEBUG` (10)|
 
 ---
-**Como atualizar:**
+**How to update:**
 `pip install sanice --upgrade`
 
 </details>
@@ -335,7 +439,7 @@ Você pode verificar os comandos disponíveis direto do seu terminal, sem abrir 
 sanice ajuda   # 🇧🇷 Português
 ```
 
-### Otimização Inteligente (v1.0.7+)
+### Otimização Inteligente (v1.0.8+)
 
 
 Ative o `smart_run` para detectar datas automaticamente e comprimir o uso de memória convertendo texto repetitivo em categorias.
@@ -348,6 +452,81 @@ from sanice import Sanice
 app = Sanice("dados_gigantes.csv", smart_run=True)
 
 ```
+### Lei de Uso de Importação (Novo Padrão)
+
+Para simplificar o setup, todas as dependências essenciais do Sanice são re-exportadas a partir de uma **única linha de importação**, eliminando a necessidade de importar Pandas, NumPy, etc., separadamente.
+
+| Ferramenta | Alias | Propósito |
+| :---: | :---: | :--- |
+| **Sanice** | `Sanice` | Classe principal do framework. |
+| **Pandas/NumPy** | `pd`, `np` | Manipulação e matemática de dados. |
+| **Visualização** | `plt`, `sns` | Gráficos (Matplotlib e Seaborn). |
+| **Serialização** | `joblib` | Salvar e carregar modelos de ML. |
+| **SQL** | `sqlalchemy` | Criação de engines de banco de dados. |
+
+**Linha de Importação Padrão:**
+
+```python
+from sanice import Sanice, pd, np, plt, sns, joblib, sqlalchemy
+```
+
+## Níveis de Configuração de Logs
+
+O método `configurar_logs()` permite controlar a verbosidade das mensagens de log geradas pelo framework, otimizando a saída para o seu sistema.
+
+| Nível | Comando | Descrição | Constante de Log (Valor) |
+| :--- | :--- | :--- |:--- |
+|**Silent** | `"silent"` | Silencia **TUDO**. Ideal para produção, garantindo que o `stdout` seja JSON puro. | `logging.CRITICAL + 1` (Maior que 50)|
+|**Error** | `"error"` | Mostra apenas mensagens de **erro grave**. | `logging.ERROR` (40)|
+|**Warn** | `"warn"` |Mostra mensagens de **alerta/cuidado** e erros. |`logging.WARNING` (30)|
+|**Info** | `"info"` | (Padrão) Mostra todas as mensagens **operacionais** (incluindo INFO e WARN). | `logging.INFO` (20)|
+|**Debug** |	`"debug"`	| Mostra mensagens **detalhadas** para depuração e tudo superior. |	`logging.DEBUG` (10)|
+
+---
+
+### Observação
+
+O nível **Silent** é particularmente útil, pois silencia todas as mensagens informativas (INFO, WARN) que poderiam poluir o console, deixando-o limpo, especialmente se a saída esperada for apenas dados estruturados.
+
+```python
+import logging
+from sanice import Sanice
+
+#CENÁRIO: PIPELINE DE DADOS EM PRODUÇÃO
+# Objetivo: Carregar dados de um SQL, limpar, treinar um modelo simples e exportar
+# os dados LIMPOS para o MongoDB. O console NÃO deve mostrar nenhuma mensagem do Sanice.
+
+# 1. Inicializa o Sanice e configura o nível de log para SILENCIOSO.
+# Isso garante que todas as mensagens do framework (INFO, WARN) sejam suprimidas.
+app = Sanice.de_sql(
+    url_conexao="postgresql://user_prod:***@servidor-db/banco_analytics",
+    query="SELECT * FROM transacoes_brutas WHERE data_criacao >= '2025-01-01'"
+)
+app.configurar_logs("silent") # Linha crucial para silenciar a saída do framework
+
+# 2. Executa um pipeline de dados complexo.
+# Nenhuma mensagem intermediária será impressa no console durante estas etapas.
+(app
+    .corrigir_colunas()
+    .transformar("valor_transacao", "dinheiro")
+    .tratar_outliers(["valor_transacao"])
+    .auto_ml(
+        alvo="e_fraude",
+        tipo="classificacao",
+        salvar_modelo="modelo_fraude_v1.pkl"
+    )
+    # O método .exportar_mongo() é o responsável pela exportação dos dados limpos.
+    .exportar_mongo(
+        uri="mongodb://localhost:27017",
+        database="analytics_db",
+        collection="transacoes_limpas"
+    )
+)
+
+# Se o pipeline for executado com sucesso no modo silencioso, a saída do console será limpa.
+# Se precisarmos confirmar a execução com uma mensagem explícita e controlada:
+print("INFO: Pipeline de dados finalizado e transações limpas exportadas para o MongoDB.")
+```
 
 
 ### ⚡ Início Rápido
@@ -355,6 +534,7 @@ app = Sanice("dados_gigantes.csv", smart_run=True)
 **Como transformar um CSV sujo em um modelo de IA em produção em minutos.**
 
 ```python
+
 from sanice import Sanice
 
 (Sanice("raw_data.csv")
@@ -376,29 +556,40 @@ from sanice import Sanice
 
 Aqui está a lista completa de métodos disponíveis organizados por categoria.
 
-#### 1. Limpeza e ETL
+### Limpeza e ETL (Engine de Internacionalização)
+
+O motor de limpeza do Sanice foi expandido para suportar cenários globais e de produção, consolidando tarefas complexas em comandos simples.
+
 | Comando | Descrição |
 | :--- | :--- |
-| `app.corrigir_colunas()` | Converte todos os nomes de colunas para `snake_case`. |
-| `app.transformar(col, rule)` | Aplica lógica: `'dinheiro'`, `'numeros'`, `'email'`, `'upper'`, `'lower'`. |
-| `app.remover_nulos(strategy, val)` | Estratégia: `'apagar'` (drop) ou `'preencher'` (fill). |
+| `app.corrigir_colunas()` | Converte nomes de colunas para `snake_case`, incluindo **remoção automática de acentos** (`á`, `ç`) e caracteres especiais (Ex: "Copáibaçuã" -> "copaibacua"). |
+| `app.transformar(col, rule)` | Aplica lógica de **limpeza de moeda internacional** e padronização de texto: `'DINHEIRO'`, `'NUMEROS'`, `'EMAIL'`, `'UPPER'`, `'LOWER'`, etc. |
+| `app.remover_nulos(strategy, val)` | Estratégia: `'apagar'` (drop) ou `'preencher'` (fill, padrão `0` se não especificado). |
 | `app.limpar_texto([cols])` | Remove espaços extras e converte texto para Title Case. |
 | `app.converter_data(col, fmt)` | Converte uma coluna de string para objetos datetime. |
 
-> **Casos de Uso:**
-> * Padronização de dados extraídos de sistemas legados ou planilhas Excel desformatadas.
-> * Conversão rápida de colunas de moeda brasileira (R$) para float antes de cálculos.
-> * Preparação de dados de formulários web onde usuários inserem datas em formatos variados.
+> **Novos Casos de Uso e Controle:**
+> * **Padronização de Colunas:** A remoção de acentos elimina erros em consultas SQL e referências em código.
+> * **Controle de Moedas:** O Sanice define a moeda padrão com base no idioma da instância (Ex: `lang="en"` assume **USD**; `lang="pt"` assume **BRL**).
+> * **Conversão Monetária Global:** Uso rápido de colunas de moeda internacional (R$, $, ¥) para float antes de cálculos.
 
-**Exemplo de Aplicação:**
+**Exemplo de Aplicação (Pipeline de Internacionalização):**
+
 ```python
-# Limpeza de uma base de RH desorganizada
-(Sanice("funcionarios_bruto.csv")
-    .corrigir_colunas()                 # "Nome Func" -> "nome_func"
-    .limpar_texto(["nome_func", "setor"])
-    .transformar("salario", "dinheiro") # "R$ 2.500,00" -> 2500.0
-    .converter_data("data_admissao")    # String -> Datetime
+# Setup: Instanciando Sanice em Inglês (assumindo moeda padrão USD)
+app = Sanice("global_sales.csv", lang="en")
+
+# Limpeza e Padronização de Colunas (incluindo acentos)
+(app.corrigir_colunas()             # Ex: "Venda Mês Jan" -> "venda_mes_jan"
+    .limpar_texto(["nome_cliente"])
+    .transformar("preco_unitario", "MONEY")  # Assumirá USD (Padrão 'en')
+    .transformar("data_envio", "DATE")
 )
+
+# Uso de Moeda Sobrescrita (Override)
+# Se você quiser limpar uma coluna de Yuan Chinês (CNY) em um app PT:
+app_pt = Sanice("dados.csv", lang="pt", currency="CNY")
+app_pt.transformar("valor_importacao", "MONEY")
 ```
 
 #### 2. Manipulação de Dados
@@ -431,7 +622,7 @@ Aqui está a lista completa de métodos disponíveis organizados por categoria.
 )
 ```
 
-#### 3. Integração com Banco de Dados (SQL & NoSQL) v1.0.7+
+#### 3. Integração com Banco de Dados (SQL & NoSQL) v1.0.8+
 
 Instale com `pip install "sanice[db]"` para habilitar estas funções.
 
@@ -585,6 +776,7 @@ Sanice is designed for global people. You can call methods in English, Portugues
 | `transformar` | `transform` | `数据转换` | `badlav_kare` |
 | `Sanice.de_sql` | `Sanice.from_sql` | `Sanice.从SQL` | `Sanice.sql_se` |
 | `exportar_mongo` | `export_mongo` | `导出Mongo` | `mongo_bheje` |
+| `configurar_logs` | `configure_logs` | `配置日志` | `log_set_kare` |
 
 </details>
 
@@ -604,3 +796,6 @@ Este projeto está licenciado sob a Apache License, Version 2.0. Consulte a [LIC
 
 ---
 Desenvolvido por **wSanice**.
+
+
+from sanice import Sanice, pd, np, plt, sns, joblib, sqlalchemy
