@@ -45,10 +45,14 @@ First off, thank you for considering contributing to Sanice! It's people like yo
     ```
 
 ## Testing
-Before submitting, run the tests to ensure nothing is broken.
-```bash
-pytest
-```
+**Code without tests is broken by design.**
+
+1.  **New Features:** If you add a new feature (e.g., a new method in `core.py`), you **must** add a corresponding test case in `tests/`.
+2.  **Bug Fixes:** If you fix a bug, write a regression test to ensure it doesn't come back.
+3.  **Run the full suite:** Before submitting, run the tests to ensure nothing is broken.
+    ```bash
+    pytest
+    ```
 
 ## Pull Request Process
 
