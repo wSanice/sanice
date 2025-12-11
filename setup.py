@@ -54,8 +54,8 @@ setup(
 
     extras_require={
         "api": ["fastapi>=0.95.0", "uvicorn>=0.22.0", "pydantic>=1.10.0"],
-        "db": ["pymongo", "psycopg2-binary"],
-        "dev": ["pytest", "twine", "wheel"]
+        "db": ["pymongo", "psycopg2-binary","mysqlclient"],
+        "dev": ["pytest", "twine", "wheel","pytest-mock", "coverage"]
     },
     entry_points={
         "console_scripts": [
