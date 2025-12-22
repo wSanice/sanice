@@ -675,7 +675,7 @@ class Sanice:
         salvar_modelo = kwargs.get('salvar_modelo') or kwargs.get('save_path')
 
         if not alvo:
-            print("[ERRO] Target/Alvo not defined.")
+            print("[ERROR] Target/Alvo not defined.") 
             return self
 
         tipo_lower = str(raw_tipo).lower()
@@ -770,11 +770,10 @@ class Sanice:
             print(f"Load AI Error: {e}")
         return self
 
-    def prever(self, nome_coluna_saida="previsao"):
-        if not hasattr(self, 'modelo_ativo'):
-            print("Carregue a IA primeiro!")
-            print(self.I18N.get(self.lang, self.I18N["en"])["err_load_ia"])
-            return self
+    if not hasattr(self, 'modelo_ativo'):
+        msg = self.I18N.get(self.lang, self.I18N["en"]).get("err_load_ia", "Load AI first!")
+        print(f"[ERRO] {msg}") 
+        return self
 
         try:
             df_temp = self.df.copy()
@@ -798,10 +797,10 @@ class Sanice:
             print(f"Prediction Error: {e}")
         return self
 
-    def servir_api(self):
-        if not hasattr(self, 'modelo_ativo'):
-            print("Erro: Carregue um modelo com .carregar_ia() antes de iniciar a API.")
-            return
+    if not hasattr(self, 'modelo_ativo'):
+        msg = self.I18N.get(self.lang, self.I18N["en"]).get("err_load_ia", "Load AI first!")
+        print(f"[API ERROR] {msg}")
+        return
 
         try:
             import uvicorn
