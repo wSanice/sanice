@@ -19,55 +19,28 @@
 
 ---
 <details>
-<summary><b>v1.0.8: Database Integration, Smart Optimization & CLI</b></summary>
+<summary><b>v1.0.10: AutoML Tournament & Clean Logs</b></summary>
 <br>
 
-Version 1.0.8 focuses on optimizing the sanice for production environments, ensuring clean output, and preparing the architecture for Artificial Intelligence commands.
+This version introduces the **"Model Tournament"** to the `auto_ml` command. Instead of training a single algorithm (Random Forest), Sanice now puts three competitors in the arena and automatically selects the best one.
 
-#### 1. Import Usage Rule (New Standard)
+#### AutoML 2.0: The Tournament (Linear vs Forest vs Gradient)
+In previous versions, Sanice relied solely on **Random Forest**. While robust, it is not always the optimal choice. Version v1.0.10 silently trains and compares:
 
-To simplify the setup, all essential Sanice dependencies are re-exported from a **single import line**, eliminating the need to import Pandas, NumPy, etc., separately.
+1.  **Linear/Logistic Regression:** Extremely fast and lightweight. Wins when data follows simple trends and allows extrapolation.
+2.  **Random Forest:** The "jack of all trades". Wins on noisy and non-linear data.
+3.  **Gradient Boosting:** The "specialist". Usually wins in accuracy by iteratively correcting errors from previous trees (the basis of XGBoost).
 
-| Tool | Alias | Purpose |
-| :---: | :---: | :--- |
-| **Sanice** | `Sanice` | The framework's core class. |
-| **Pandas/NumPy** | `pd`, `np` | Data manipulation and mathematical arrays. |
-| **Visualization** | `plt`, `sns` | Plotting (Matplotlib and Seaborn). |
-| **Serialization** | `joblib` | Saving and loading ML models. |
-| **SQL** | `sqlalchemy` | Creating database engines. |
+**Why is this better?**
+* **Higher Accuracy:** Gradient Boosting often outperforms Random Forest on tabular data.
+* **Lighter Models:** If a Linear model wins, the final `.pkl` file size is drastically reduced (KB vs MB).
+* **Extrapolation:** Random Forest cannot predict values outside the range seen during training. The Linear model can, making the system more versatile.
 
-**Standard Import Line:**
+#### 🔇 Sober & Professional Logs
+We removed excessive emojis and cleaned up the terminal output.
+* The system now strictly respects `.configure_logs("silent")`.
+* Standardized messages with tags: `[AUTO-ML]`, `[RESULT]`, `[ERROR]`.
 
-```python
-from sanice import Sanice, pd, np, plt, sns, joblib, sqlalchemy
-```
-#### 2. Cleaning and Internationalization (Core Engine)
-
-The cleaning engine has been expanded to support global and production scenarios.
-
-Column Standardization: The `fix_columns()` function now includes automatic accent removal and special character cleaning, ensuring column names are database- and Python-compatible (e.g., "Copáibaçuã" -> "copaibacua").
-
-Currency Control: Sanice sets the default currency based on the language (`pt` -> BRL, `en` -> USD). The developer can override the default currency with the optional `currency` parameter in the constructor.
-
-#### 3. Production Control and Logging
-
-* **Log Control (Verbosity Control):** The method `app.configure_logs(level="silent")` was added to silence all informative messages (e.g., `[LOAD]`, `[SMART]`, etc.) in the console.
-    * **Impact:** Essential for use in backends (Node.js/APIs) where the output must be clean JSON, preventing `JSON.parse` errors.
-* **Multi-Currency Support:** The `transform` method now supports currency formats for **BRL, USD, CNY, and INR**, based on the default `lang` setting of the Sanice object.
-* **Import Usage Rule:** Implemented dependency re-exportation (`from sanice import pd, np, plt, sns`), simplifying the developer's setup to a single line.
-* **Column Cleaning (Accent Removal):** The `fix_columns()` method was enhanced to automatically remove accents (`á`, `ç`, `ã`) and special characters.
-
-#### Log Configuration Detail
-
-| Level | Command | Description | Log Constant (Value) |
-| :---: | :---: | :--- | :--- |
-|**Silent** | `"silent"` | Silences **EVERYTHING**. Ideal for production, ensuring `stdout` is pure JSON. | `logging.CRITICAL + 1` (Greater than 50)|
-|**Error** | `"error"` | Shows only **severe errors**. | `logging.ERROR` (40)|
-|**Warn** | `"warn"` | Shows warnings and errors. | `logging.WARNING` (30)|
-|**Info** | `"info"` | (Default) Shows all operational messages. | `logging.INFO` (20)|
-|**Debug** | `"debug"` | Shows **detailed** execution messages and all higher levels. | `logging.DEBUG` (10)|
-
----
 **How to update:**
 `pip install sanice --upgrade`
 </details>
@@ -96,7 +69,7 @@ sanice bangzhu # 🇨🇳 Chinese
 sanice madad   # 🇮🇳 Hindi
 ```
 
-### Smart Optimization (v1.0.8+)
+### Smart Optimization (v1.0.9+)
 
 Enable `smart_run` to automatically detect dates and compress memory usage by converting repetitive text to categories.
 
@@ -258,7 +231,7 @@ app_pt.transform("import_value", "MONEY")
     .sort("revenue", ascending=False)
 )
 ```
-### 3. Database Integration (SQL & NoSQL) v1.0.8+
+### 3. Database Integration (SQL & NoSQL) v1.0.9+
 You can verify installation with `pip install "sanice[db]"` to enable these features.
 
 | Command | Description |
@@ -316,22 +289,26 @@ app = Sanice.from_sql(
 | Command | Description |
 | :--- | :--- |
 | `app.scale(method)` | Normalizes data using `'minmax'` or `'standard'` scaler. |
-| `app.auto_ml(target, type, path)` | AutoML pipeline: encodes, splits, trains, and saves model. |
+| `app.auto_ml(target, type, path)` | **AutoML Tournament:** trains 3 models (Linear, RF, Gradient), selects the best one, and saves. |
 | `app.load_ai(path)` | Loads a pre-trained `.pkl` model into memory. |
 | `app.predict(output_col)` | Generates predictions using the loaded model. |
 
 > **Use Cases:**
+> * **High-precision modeling:** Sanice automatically finds the best algorithm for your data (Linear vs Ensemble).
 > * Quick creation of baselines to validate business hypotheses.
-> * Churn Prediction (customers likely to cancel) or Credit Scoring.
-> * Demand forecasting based on sales history (Regression).
+> * Churn Prediction (Classification) or Demand Forecasting (Regression).
 
 **Application Example:**
 ```python
-# Training and using a Churn prediction model
+# Training with Tournament (Sanice compares models automatically)
 (Sanice("telecom_churn.csv")
     .scale("minmax")
     .auto_ml(target="churn", type="classification", save_path="my_ai.pkl")
 )
+
+# Console Output:
+# [AUTO-ML] Evaluating 3 models (Linear, RF, Gradient)...
+# [RESULT] Best model: GradientBoosting | Accuracy: 0.9450
 
 # ... In another script, loading and predicting:
 (Sanice("new_customers.csv")
@@ -372,58 +349,30 @@ This project is licensed under the Apache License, Version 2.0. See the [LICENSE
 ---
 
 <details>
-<summary><b>v1.0.8: Integração com Bancos, Otimização Inteligente e CLI</b></summary>
+<summary><b>v1.0.10: Torneio AutoML & Logs Limpos</b></summary>
 <br>
 
-A versão 1.0.8 foca em otimizar o sanice para ambientes de produção, garantindo saída limpa e preparando a arquitetura para comandos de Inteligência Artificial.
+Esta versão introduz o **"Torneio de Modelos"** no comando `auto_ml`. Agora, o Sanice não treina apenas um algoritmo, mas coloca três modleos para competir e escolhe automaticamente o melhor.
 
-#### Novas Funcionalidades e Melhorias
+#### AutoML 2.0: O Torneio (Linear vs Forest vs Gradient)
+Nas versões anteriores, o Sanice usava apenas **Random Forest**. Embora robusto, ele nem sempre é a melhor escolha. A versão v1.0.10 treina e compara silenciosamente:
 
-Para simplificar o setup, todas as dependências essenciais do Sanice são re-exportadas a partir de uma **única linha de importação**, eliminando a necessidade de importar Pandas, NumPy, etc., separadamente.
+1.  **Linear/Logistic Regression:** Extremamente rápido e leve. Vence quando os dados têm tendências simples e permite extrapolação.
+2.  **Random Forest:** O "pau pra toda obra". Vence em dados ruidosos e não-lineares.
+3.  **Gradient Boosting:** O "especialista". Geralmente vence em precisão, corrigindo os erros das árvores anteriores (base do XGBoost).
 
-| Ferramenta | Alias | Propósito |
-| :---: | :---: | :--- |
-| **Sanice** | `Sanice` | Classe principal do framework. |
-| **Pandas/NumPy** | `pd`, `np` | Manipulação e matemática de dados. |
-| **Visualização** | `plt`, `sns` | Gráficos (Matplotlib e Seaborn). |
-| **Serialização** | `joblib` | Salvar e carregar modelos de ML. |
-| **SQL** | `sqlalchemy` | Criação de engines de banco de dados. |
+**Por que isso é melhor?**
+* **Maior Precisão:** O Gradient Boosting frequentemente supera o Random Forest em dados tabulares.
+* **Modelos Mais Leves:** Se o modelo Linear vencer, o arquivo final `.pkl` será drasticamente menor (KB vs MB).
+* **Extrapolação:** O Random Forest não consegue prever valores fora do intervalo que viu no treino (ex: preços mais altos que o histórico). O modelo Linear consegue.
 
-**Linha de Importação Padrão:**
+#### 🔇 Logs Sóbrios e Profissionais
+Removemos emojis excessivos e limpamos a saída do terminal.
+* O sistema agora respeita estritamente o modo `.configurar_logs("silent")`.
+* Mensagens padronizadas com tags `[AUTO-ML]`, `[RESULTADO]`, `[ERRO]`.
 
-```python
-from sanice import Sanice, pd, np, plt, sns, joblib, sqlalchemy
-```
-### Limpeza e Internacionalização (Core Engine)
-
-O motor de limpeza foi expandido para suportar cenários globais e de produção.
-
-Padronização de Colunas: A função `corrigir_colunas()` agora inclui remoção automática de acentos e caracteres especiais, garantindo nomes de colunas compatíveis com bancos de dados e Python (ex: "Copáibaçuã" -> "copaibacua").
-
-Controle de Moedas: O Sanice define a moeda padrão com base no idioma (pt -> BRL, en -> USD). O desenvolvedor pode sobrescrever a moeda padrão com o parâmetro currency no construtor.
-
-### Controle de Produção e Logs
-
-Verbosity Control: Adicionado o método `app.configurar_logs(nivel="silent")` para silenciar todas as mensagens informativas (`[CARREGAR]`, `[SMART]`, etc.) no console.
-
-Impacto: Essencial para uso em backends (Node.js/APIs) onde a saída precisa ser um JSON limpo, prevenindo erros de `JSON.parse`.
-
-Ajuste na manipulação de NaN (Not a Number) em descritivos estatísticos para evitar erros de tipagem em integrações externas (JSON/API).
-
-O método `configurar_logs()` permite controlar a verbosidade das mensagens de log geradas pelo framework, otimizando a saída para o seu sistema.
-
-| Nível | Comando | Descrição | Constante de Log (Valor) |
-| :--- | :--- | :--- |:--- |
-|**Silent** | `"silent"` | Silencia **TUDO**. Ideal para produção, garantindo que o `stdout` seja JSON puro. | `logging.CRITICAL + 1` (Maior que 50)|
-|**Error** | `"error"` | Mostra apenas mensagens de **erro grave**. | `logging.ERROR` (40)|
-|**Warn** | `"warn"` |Mostra mensagens de **alerta/cuidado** e erros. |`logging.WARNING` (30)|
-|**Info** | `"info"` | (Padrão) Mostra todas as mensagens **operacionais** (incluindo INFO e WARN). | `logging.INFO` (20)|
-|**Debug** |	`"debug"`	| Mostra mensagens **detalhadas** para depuração e tudo superior. |	`logging.DEBUG` (10)|
-
----
-**How to update:**
+**Como atualizar:**
 `pip install sanice --upgrade`
-
 </details>
 
 <a name="-português"></a>
@@ -451,7 +400,7 @@ Você pode verificar os comandos disponíveis direto do seu terminal, sem abrir 
 sanice ajuda   # 🇧🇷 Português
 ```
 
-### Otimização Inteligente (v1.0.8+)
+### Otimização Inteligente (v1.0.9+)
 
 
 Ative o `smart_run` para detectar datas automaticamente e comprimir o uso de memória convertendo texto repetitivo em categorias.
@@ -634,7 +583,7 @@ app_pt.transformar("valor_importacao", "MONEY")
 )
 ```
 
-### 3. Integração com Banco de Dados (SQL & NoSQL) v1.0.8+
+### 3. Integração com Banco de Dados (SQL & NoSQL) v1.0.9+
 
 Instale com `pip install "sanice[db]"` para habilitar estas funções.
 
@@ -696,28 +645,32 @@ app = Sanice.de_sql(
 ### 5. IA e Machine Learning
 | Comando | Descrição |
 | :--- | :--- |
-| `app.escalonar(method)` | Normaliza dados usando escalonador `'minmax'` ou `'standard'`. |
-| `app.auto_ml(target, type, path)` | Pipeline AutoML: encode, split, treino e salvamento do modelo. |
-| `app.carregar_ia(path)` | Carrega um modelo `.pkl` pré-treinado na memória. |
-| `app.prever(output_col)` | Gera previsões usando o modelo carregado. |
+| `app.escalonar(metodo)` | Normaliza dados usando escalonador `'minmax'` ou `'standard'`. |
+| `app.auto_ml(alvo, tipo, caminho)` | **Torneio AutoML:** treina 3 modelos (Linear, RF, Gradient), seleciona o melhor e salva. |
+| `app.carregar_ia(caminho)` | Carrega um modelo `.pkl` pré-treinado na memória. |
+| `app.prever(coluna_saida)` | Gera previsões usando o modelo carregado. |
 
 > **Casos de Uso:**
+> * **Modelagem de alta precisão:** O Sanice encontra automaticamente o melhor algoritmo para seus dados (Linear vs Ensemble).
 > * Criação rápida de *baselines* (modelos de referência) para validar hipóteses.
-> * Previsão de Churn (clientes que vão cancelar) ou Score de Crédito.
-> * Previsão de demanda de estoque baseada em histórico de vendas.
+> * Previsão de Churn (Classificação) ou Previsão de Demanda (Regressão).
 
 **Exemplo de Aplicação:**
 ```python
-# Treinando e usando um modelo de previsão de Churn
+# Treinamento com Torneio (Sanice compara modelos automaticamente)
 (Sanice("telecom_churn.csv")
     .escalonar("minmax")
-    .auto_ml(alvo="churn", tipo="classificacao", salvar_modelo="meu_ia.pkl")
+    .auto_ml(alvo="churn", tipo="classificacao", salvar_modelo="minha_ia.pkl")
 )
+
+# Saída do Console:
+# [AUTO-ML] Avaliando 3 modelos (Linear, RF, Gradient)...
+# [RESULTADO] Melhor modelo: GradientBoosting | Acurácia: 0.9450
 
 # ... Em outro script, carregando e prevendo:
 (Sanice("novos_clientes.csv")
-    .carregar_ia("meu_ia.pkl")
-    .prever(output_col="probabilidade_churn")
+    .carregar_ia("minha_ia.pkl")
+    .prever(nome_coluna_saida="prob_churn")
 )
 ```
 
@@ -784,6 +737,8 @@ Sanice is designed for global people. You can call methods in English, Portugues
 | `Sanice.de_sql` | `Sanice.from_sql` | `Sanice.从SQL` | `Sanice.sql_se` |
 | `exportar_mongo` | `export_mongo` | `导出Mongo` | `mongo_bheje` |
 | `configurar_logs` | `configure_logs` | `配置日志` | `log_set_kare` |
+| `selecionar_colunas` | `select_columns` | `选择列` | `columns_chunne` |
+| `pegar_dataframe` | `get_dataframe` | `获取数据` | `data_lo` |
 
 </details>
 

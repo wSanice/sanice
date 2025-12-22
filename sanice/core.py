@@ -40,7 +40,6 @@ class Sanice:
     -----------------------------------------------------------------------------
     Framework para limpar, transformar e modelar dados automaticamente.
     """
-
     I18N = {
         "pt": {
             "auto_date": "[SMART] Data detectada e convertida na coluna: '{col}'",
@@ -70,7 +69,7 @@ class Sanice:
             "ml_success_reg": "   Modelo Regressor treinado!",
             "ml_acc": "   Acurácia: {score:.2%}",
             "ml_r2": "   R² Score: {score:.4f}",
-            "ml_saved": "   Modelo blindado salvo em: {path}",
+            "ml_saved": "   Modelo salvo em: {path}",
             "ia_loaded": "[IA] Modelo carregado! Espera {n} colunas.",
             "pred_done": "[PREVISÃO] Previsões geradas na coluna '{col}'.",
             "err_load_ia": "Você precisa usar .carregar_ia() antes de prever!",
@@ -84,7 +83,12 @@ class Sanice:
             "trans_email": "[TRANSFORMAR] '{col}' normalizada para E-mail.",
             "trans_date": "[TRANSFORMAR] '{col}' convertida para Data.",
             "trans_err": "[ERRO] Regra '{rule}' desconhecida ou falha.",
+            "select_ok": "[SELEÇÃO] Mantidas {n} colunas.",
+            "select_warn": "[AVISO] Colunas não encontradas e ignoradas: {cols}",
             "help_title": "\n[AJUDA] Comandos disponíveis em '{lang}':\n",
+            "ml_tourn": "   [AUTO-ML] Avaliando {n} modelos (Linear, RF, Gradient)...",
+            "ml_win": "   [RESULTADO] Melhor modelo: {name} | {metric}: {score:.4f}",
+            "ml_fail": "   [ERRO] Falha no modelo {name}: {e}",
         },
         "en": {
             "auto_date": "[SMART] Date detected and converted in column: '{col}'",
@@ -129,6 +133,11 @@ class Sanice:
             "trans_date": "[TRANSFORM] '{col}' converted to Date.",
             "trans_err": "[ERROR] Rule '{rule}' unknown or failed.",
             "help_title": "\n[HELP] Available commands in '{lang}':\n",
+            "select_ok": "[SELECT] Kept {n} columns.",
+            "select_warn": "[WARN] Columns not found and ignored: {cols}",
+            "ml_tourn": "   [AUTO-ML] Evaluating {n} models (Linear, RF, Gradient)...",
+            "ml_win": "   [RESULT] Best model: {name} | {metric}: {score:.4f}",
+            "ml_fail": "   [ERROR] Model {name} failed: {e}",
         },
         "zh": {
             "auto_date": "[智能] 检测到日期并已转换列：'{col}'",
@@ -173,6 +182,11 @@ class Sanice:
             "trans_date": "[转换] '{col}' 已转换为日期。",
             "trans_err": "[错误] 规则 '{rule}' 未知或失败。",
             "help_title": "\n[帮助] '{lang}' 可用命令：\n",
+            "select_ok": "[选择] 保留了 {n} 列。",
+            "select_warn": "[警告] 未找到并已忽略的列：{cols}",
+            "ml_tourn": "   [AUTO-ML] 正在评估 {n} 个模型...",
+            "ml_win": "   [结果] 最佳模型: {name} ({metric}: {score:.4f})",
+            "ml_fail": "   [错误] 模型 {name} 失败: {e}",
         },
         "hi": {
             "auto_date": "[SMART] '{col}' mein date mili aur convert ho gayi.",
@@ -217,6 +231,11 @@ class Sanice:
             "trans_date": "[BADLAV] '{col}' Tarikh mein badla gaya.",
             "trans_err": "[ERROR] Rule '{rule}' galat hai ya fail ho gayi.",
             "help_title": "\n[MADAD] '{lang}' mein commands:\n",
+            "select_ok": "[CHUNNA] {n} columns rakhi gayin.",
+            "select_warn": "[CHETAVANI] Columns nahi mili aur ignore ki gayi: {cols}",
+            "ml_tourn": "   [AUTO-ML] {n} models ka mulyankan (evaluation) ho raha hai...",
+            "ml_win": "   [NATIJA] Behtarin model: {name} ({metric}: {score:.4f})",
+            "ml_fail": "   [GALTI] Model {name} fail hua: {e}",
         }
     }
 
@@ -246,7 +265,9 @@ class Sanice:
         "escalonar":         ["scale_data",        "数据缩放",   "scale_kare"],
         "servir_api":        ["serve_api",         "启动API",    "api_chalu_kare"],
         "transformar":       ["transform",         "数据转换",   "badlav_kare"],
-        "configurar_logs": ["configure_logs", "配置日志", "log_set_kare"]
+        "configurar_logs": ["configure_logs", "配置日志", "log_set_kare"],
+        "selecionar_colunas": ["select_columns", "选择列", "columns_chunne"],
+        "pegar_dataframe": ["get_dataframe", "获取数据", "data_lo"]
     }
     
     VERBOSITY_MAP = {
@@ -311,10 +332,6 @@ class Sanice:
     sql_se = de_sql
 
     def configurar_logs(self, nivel="info"):
-        """
-        Configura o nível de verbosidade do Sanice.
-        Níveis disponíveis: 'silent', 'error', 'warn', 'info', 'debug'.
-        """
         nivel_log = self.VERBOSITY_MAP.get(nivel.lower(), logging.INFO)
         logger.setLevel(nivel_log)
         
@@ -358,7 +375,6 @@ class Sanice:
                     self._log("auto_date", col=col)
 
     def _otimizar_memoria(self):
-        """Converte colunas com alta repetição para 'category' para economizar RAM"""
         colunas_texto = self.df.select_dtypes(include=['object']).columns
         convertidas = 0
         total_linhas = len(self.df)
@@ -495,6 +511,18 @@ class Sanice:
 
     def pegar_dataframe(self):
         return self.df
+    
+    def selecionar_colunas(self, colunas):
+        if isinstance(colunas, str): colunas = [colunas]
+        cols_existentes = [c for c in colunas if c in self.df.columns]
+
+        if len(cols_existentes) < len(colunas):
+            faltantes = set(colunas) - set(cols_existentes)
+            self._log("select_warn", cols=faltantes)
+
+        self.df = self.df[cols_existentes]
+        self._log("select_ok", n=len(cols_existentes))
+        return self
 
     def transformar(self, colunas, regra):
         if isinstance(colunas, str): colunas = [colunas]
@@ -641,62 +669,94 @@ class Sanice:
         return self
     
     def auto_ml(self, **kwargs):
-        alvo = kwargs.get('alvo') or kwargs.get('target') or kwargs.get('mubiao') or kwargs.get('lakshya')
-        raw_tipo = kwargs.get('tipo') or kwargs.get('type') or kwargs.get('leixing') or kwargs.get('prakar') or "classificacao"
+        alvo = kwargs.get('alvo') or kwargs.get('target') or kwargs.get('mubiao')
+        raw_tipo = kwargs.get('tipo') or kwargs.get('type') or "classificacao"
         teste_tam = kwargs.get('teste_tam') or kwargs.get('test_size') or 0.2
-        salvar_modelo = kwargs.get('salvar_modelo') or kwargs.get('save_path') or kwargs.get('baocun') or kwargs.get('save_kare')
+        salvar_modelo = kwargs.get('salvar_modelo') or kwargs.get('save_path')
 
         if not alvo:
-            print("[ERRO/ERROR] Target/Alvo not defined.")
+            print("[ERRO] Target/Alvo not defined.")
             return self
 
         tipo_lower = str(raw_tipo).lower()
-        eh_classificacao = any(x in tipo_lower for x in ['class', 'fenlei', '分类', 'varg'])
+        eh_classificacao = any(x in tipo_lower for x in ['class', 'fenlei', 'binario'])
         
         from sklearn.model_selection import train_test_split
-        from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
         from sklearn.metrics import accuracy_score, r2_score
-        
+        from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, RandomForestRegressor, GradientBoostingRegressor
+        from sklearn.linear_model import LogisticRegression, LinearRegression
+
         self._log("ml_start", target=alvo)
 
         try:
             df_ml = self.df.dropna()
             X = df_ml.drop(columns=[alvo])
             y = df_ml[alvo]
-            
+    
             cols_datas = X.select_dtypes(include=['datetime', 'datetimetz']).columns
             if len(cols_datas) > 0:
-                self._log("ml_ignore_date", cols=list(cols_datas))
                 X = X.drop(columns=cols_datas)
 
             X = pd.get_dummies(X, drop_first=True)
             self._log("ml_feats", n=X.shape[1])
-            
             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=teste_tam, random_state=42)
             
             if eh_classificacao:
-                modelo = RandomForestClassifier(n_estimators=100, random_state=42)
-                modelo.fit(X_train, y_train)
-                preds = modelo.predict(X_test)
-                acc = accuracy_score(y_test, preds)
-                self._log("ml_success_clf")
-                self._log("ml_acc", score=acc)
-            else: 
-                modelo = RandomForestRegressor(n_estimators=100, random_state=42)
-                modelo.fit(X_train, y_train)
-                preds = modelo.predict(X_test)
-                r2 = r2_score(y_test, preds)
-                self._log("ml_success_reg")
-                self._log("ml_r2", score=r2)
+                modelos = {
+                    "LogisticRegression": LogisticRegression(max_iter=1000),
+                    "RandomForest": RandomForestClassifier(n_estimators=100, random_state=42),
+                    "GradientBoosting": GradientBoostingClassifier(random_state=42)
+                }
+                metrica_nome = "Acurácia"
+            else:
+                modelos = {
+                    "LinearRegression": LinearRegression(),
+                    "RandomForest": RandomForestRegressor(n_estimators=100, random_state=42),
+                    "GradientBoosting": GradientBoostingRegressor(random_state=42)
+                }
+                metrica_nome = "R² Score"
 
+            melhor_score = -float("inf")
+            melhor_modelo = None
+            melhor_nome = ""
+
+            self._log("ml_tourn", n=len(modelos))
+            
+            for nome, modelo in modelos.items():
+                try:
+                    modelo.fit(X_train, y_train)
+                    preds = modelo.predict(X_test)
+                    
+                    if eh_classificacao:
+                        score = accuracy_score(y_test, preds)
+                    else:
+                        score = r2_score(y_test, preds)
+                    
+                    if score > melhor_score:
+                        melhor_score = score
+                        melhor_modelo = modelo
+                        melhor_nome = nome
+                        
+                except Exception as e:
+                    self._log("ml_fail", name=nome, e=str(e))
+
+            self._log("ml_win", name=melhor_nome, metric=metrica_nome, score=melhor_score)
+            
             if salvar_modelo:
-                dados_ia = {"modelo": modelo, "colunas_treino": X.columns.tolist(), "scaler": self.scaler}
+                dados_ia = {
+                    "modelo": melhor_modelo, 
+                    "colunas_treino": X.columns.tolist(), 
+                    "scaler": self.scaler,
+                    "tipo_modelo": melhor_nome,
+                    "score": melhor_score
+                }
                 joblib.dump(dados_ia, salvar_modelo)
                 self._log("ml_saved", path=salvar_modelo)
                 
         except Exception as e:
             print(f"AutoML Error: {e}")
             import traceback; traceback.print_exc()
+            
         return self
 
     def carregar_ia(self, caminho_modelo):
@@ -784,7 +844,7 @@ class Sanice:
 def cli():
     import sys
     
-    VERSION = "1.0.7"
+    VERSION = "1.0.10"
 
     CLI_MSGS = {
         "en": "To use inside Python:",
