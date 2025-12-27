@@ -12,6 +12,7 @@
 ![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue)
 ![Status](https://img.shields.io/badge/status-stable-brightgreen)
+[![PyPI Downloads](https://static.pepy.tech/personalized-badge/sanice?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=RED&left_text=downloads)](https://pepy.tech/projects/sanice)
 
 [🇺🇸 English](#-english) | [🇧🇷 Português](#-português) | [🇨🇳 &nbsp; 🇮🇳 &nbsp;Multi-language](#-Multilanguage)
 
