@@ -23,7 +23,7 @@ except FileNotFoundError:
 
 setup(
     name="sanice",
-    version="1.0.10",
+    version="1.0.11",
     author="wSanice",
     author_email="wansanice@proton.me",
     description="Biblioteca fluente para Data Science ágil (ETL, AutoML e Plotting).",
@@ -55,7 +55,7 @@ setup(
 
     extras_require={
         "api": ["fastapi>=0.95.0", "uvicorn>=0.22.0", "pydantic>=1.10.0"],
-        "db": ["pymongo", "psycopg2-binary","mysqlclient"],
+        "db": ["pymongo", "psycopg2-binary","pymysql"],
         "dev": ["pytest", "twine", "wheel","pytest-mock", "coverage"]
     },
     entry_points={

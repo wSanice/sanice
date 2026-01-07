@@ -309,7 +309,7 @@ class Sanice:
                     self._tentar_converter_datas()
                     self._otimizar_memoria()
             else:
-                raise ValueError("Format not supported / Formato não suportado.")
+                pass
                 
         except Exception as e:
             self._log("load_err", e=str(e))
