@@ -20,7 +20,7 @@
 
 ---
 <details>
-<summary><b>v1.0.10: AutoML Tournament & Clean Logs</b></summary>
+<summary><b>v1.0.10+: AutoML Tournament & Clean Logs</b></summary>
 <br>
 
 This version introduces the **"Model Tournament"** to the `auto_ml` command. Instead of training a single algorithm (Random Forest), Sanice now puts three competitors in the arena and automatically selects the best one.
@@ -350,7 +350,7 @@ This project is licensed under the Apache License, Version 2.0. See the [LICENSE
 ---
 
 <details>
-<summary><b>v1.0.10: Torneio AutoML & Logs Limpos</b></summary>
+<summary><b>v1.0.10+: Torneio AutoML & Logs Limpos</b></summary>
 <br>
 
 Esta versão introduz o **"Torneio de Modelos"** no comando `auto_ml`. Agora, o Sanice não treina apenas um algoritmo, mas coloca três modleos para competir e escolhe automaticamente o melhor.
