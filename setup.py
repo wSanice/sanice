@@ -23,7 +23,7 @@ except FileNotFoundError:
 
 setup(
     name="sanice",
-    version="1.0.11",
+    version="1.1.0",
     author="wSanice",
     author_email="wansanice@proton.me",
     description="Biblioteca fluente para Data Science ágil (ETL, AutoML e Plotting).",

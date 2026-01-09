@@ -770,10 +770,12 @@ class Sanice:
             print(f"Load AI Error: {e}")
         return self
 
-    if not hasattr(self, 'modelo_ativo'):
-        msg = self.I18N.get(self.lang, self.I18N["en"]).get("err_load_ia", "Load AI first!")
-        print(f"[ERRO] {msg}") 
-        return self
+    
+    def prever(self, nome_coluna_saida="previsao"):
+        if not hasattr(self, 'modelo_ativo'):
+            msg = self.I18N.get(self.lang, self.I18N["en"]).get("err_load_ia", "Load AI first!")
+            print(f"[ERRO] {msg}") 
+            return self
 
         try:
             df_temp = self.df.copy()
@@ -797,10 +799,11 @@ class Sanice:
             print(f"Prediction Error: {e}")
         return self
 
-    if not hasattr(self, 'modelo_ativo'):
-        msg = self.I18N.get(self.lang, self.I18N["en"]).get("err_load_ia", "Load AI first!")
-        print(f"[API ERROR] {msg}")
-        return
+    def servir_api(self):
+        if not hasattr(self, 'modelo_ativo'):
+            msg = self.I18N.get(self.lang, self.I18N["en"]).get("err_load_ia", "Load AI first!")
+            print(f"[API ERROR] {msg}")
+            return
 
         try:
             import uvicorn
@@ -843,7 +846,7 @@ class Sanice:
 def cli():
     import sys
     
-    VERSION = "1.0.10"
+    VERSION = "1.1.0"
 
     CLI_MSGS = {
         "en": "To use inside Python:",

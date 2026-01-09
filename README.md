@@ -20,27 +20,19 @@
 
 ---
 <details>
-<summary><b>v1.0.10+: AutoML Tournament & Clean Logs</b></summary>
+<summary><b>Release Notes - v1.1.0+</b></summary>
 <br>
 
-This version introduces the **"Model Tournament"** to the `auto_ml` command. Instead of training a single algorithm (Random Forest), Sanice now puts three competitors in the arena and automatically selects the best one.
+## Critical Fixes
+* **Scope Integrity:** Fixed the fatal `SyntaxError: 'return' outside function` error that affected version v1.0.11.
+* **Method Restoration:** Function headers for `.predict()` and `.serve_api()` have been properly restored, ensuring correct execution by the Python interpreter.
+* [cite_start]**Shielded Pipeline:** Implemented internal protections to prevent crashes if the AI model is not loaded before prediction, keeping Method Chaining functional[cite: 208, 251].
 
-#### AutoML 2.0: The Tournament (Linear vs Forest vs Gradient)
-In previous versions, Sanice relied solely on **Random Forest**. While robust, it is not always the optimal choice. Version v1.0.10 silently trains and compares:
-
-1.  **Linear/Logistic Regression:** Extremely fast and lightweight. Wins when data follows simple trends and allows extrapolation.
-2.  **Random Forest:** The "jack of all trades". Wins on noisy and non-linear data.
-3.  **Gradient Boosting:** The "specialist". Usually wins in accuracy by iteratively correcting errors from previous trees (the basis of XGBoost).
-
-**Why is this better?**
-* **Higher Accuracy:** Gradient Boosting often outperforms Random Forest on tabular data.
-* **Lighter Models:** If a Linear model wins, the final `.pkl` file size is drastically reduced (KB vs MB).
-* **Extrapolation:** Random Forest cannot predict values outside the range seen during training. The Linear model can, making the system more versatile.
-
-#### 🔇 Sober & Professional Logs
-We removed excessive emojis and cleaned up the terminal output.
-* The system now strictly respects `.configure_logs("silent")`.
-* Standardized messages with tags: `[AUTO-ML]`, `[RESULT]`, `[ERROR]`.
+## New Features & Improvements
+* [cite_start]**AutoML 2.0 (The Tournament):** Stabilization of the model arena where **Linear Regression**, **Random Forest**, and **Gradient Boosting** compete for accuracy[cite: 694, 750].
+* [cite_start]**Intelligent Prediction:** The `.predict()` method now automatically manages column reindexing (dummies), ensuring compatibility between training data and new input[cite: 793, 1206].
+* [cite_start]**One-Line API:** Optimized the `.serve_api()` command for instant deployment of **FastAPI** servers with integrated interactive documentation (Swagger UI)[cite: 184, 958, 961].
+* [cite_start]**Global Localization (I18N):** Full refinement of log messages and data cleaning support for **Portuguese**, **English**, **Chinese**, and **Hindi**[cite: 358, 362].
 
 **How to update:**
 `pip install sanice --upgrade`
@@ -350,27 +342,19 @@ This project is licensed under the Apache License, Version 2.0. See the [LICENSE
 ---
 
 <details>
-<summary><b>v1.0.10+: Torneio AutoML & Logs Limpos</b></summary>
+<summary><b>Nota da Versão - v1.1.0+</b></summary>
 <br>
 
-Esta versão introduz o **"Torneio de Modelos"** no comando `auto_ml`. Agora, o Sanice não treina apenas um algoritmo, mas coloca três modleos para competir e escolhe automaticamente o melhor.
+## Correções Críticas
+* **Integridade de Escopo:** Corrigido o erro fatal `SyntaxError: 'return' outside function` que afetava a versão v1.0.11.
+* **Restauração de Métodos:** Os cabeçalhos das funções `.prever()` e `.servir_api()` foram devidamente restaurados, garantindo a execução correta do interpretador Python.
+* [cite_start]**Pipeline Blindado:** Implementada proteção interna para evitar falhas caso o modelo de IA não seja carregado antes da predição, mantendo o encadeamento de métodos (Method Chaining) funcional[cite: 208, 251].
 
-#### AutoML 2.0: O Torneio (Linear vs Forest vs Gradient)
-Nas versões anteriores, o Sanice usava apenas **Random Forest**. Embora robusto, ele nem sempre é a melhor escolha. A versão v1.0.10 treina e compara silenciosamente:
-
-1.  **Linear/Logistic Regression:** Extremamente rápido e leve. Vence quando os dados têm tendências simples e permite extrapolação.
-2.  **Random Forest:** O "pau pra toda obra". Vence em dados ruidosos e não-lineares.
-3.  **Gradient Boosting:** O "especialista". Geralmente vence em precisão, corrigindo os erros das árvores anteriores (base do XGBoost).
-
-**Por que isso é melhor?**
-* **Maior Precisão:** O Gradient Boosting frequentemente supera o Random Forest em dados tabulares.
-* **Modelos Mais Leves:** Se o modelo Linear vencer, o arquivo final `.pkl` será drasticamente menor (KB vs MB).
-* **Extrapolação:** O Random Forest não consegue prever valores fora do intervalo que viu no treino (ex: preços mais altos que o histórico). O modelo Linear consegue.
-
-#### 🔇 Logs Sóbrios e Profissionais
-Removemos emojis excessivos e limpamos a saída do terminal.
-* O sistema agora respeita estritamente o modo `.configurar_logs("silent")`.
-* Mensagens padronizadas com tags `[AUTO-ML]`, `[RESULTADO]`, `[ERRO]`.
+## Novas Funcionalidades e Melhorias
+* [cite_start]**AutoML 2.0 (O Torneio):** Estabilização da arena de modelos onde competem **Linear Regression**, **Random Forest** e **Gradient Boosting**[cite: 694, 750].
+* [cite_start]**Predição Inteligente:** O método `.prever()` agora gerencia automaticamente a reindexação de colunas (dummies), garantindo compatibilidade entre dados de treino e novos dados[cite: 793, 1206].
+* [cite_start]**API de Uma Linha:** Otimização do comando `.servir_api()` para levantamento instantâneo de servidores **FastAPI** com documentação interativa (Swagger UI) integrada[cite: 184, 958, 961].
+* [cite_start]**Localização Global (I18N):** Refinamento completo das mensagens de log e suporte para limpeza de dados em **Português**, **Inglês**, **Chinês** e **Hindi**[cite: 358, 362].
 
 **Como atualizar:**
 `pip install sanice --upgrade`
